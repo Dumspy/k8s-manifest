@@ -1,0 +1,44 @@
+controller:
+  image:
+    repository: ghcr.io/dumspy/auxbot-controller
+    tag: latest
+    pullPolicy: Always
+  
+  service:
+    type: ClusterIP
+    ports:
+      api: 80
+      grpc: 50051
+
+  resources:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 100m
+      memory: 256Mi
+
+  env:
+    WORKER_IMAGE: "ghcr.io/dumspy/auxbot-worker:latest"
+    INACTIVITY_TIMEOUT_MINUTES: "2"
+
+  secrets:
+    DISCORD_CLIENT_ID:
+      name: auxbot-secrets
+      key: DISCORD_CLIENT_ID
+    DISCORD_TOKEN:
+      name: auxbot-secrets
+      key: DISCORD_TOKEN
+    SENTRY_DSN:
+      name: auxbot-secrets
+      key: SENTRY_DSN
+
+rbac:
+  create: true
+  rules:
+    - apiGroups: [""]
+      resources: ["services", "pods"]
+      verbs: ["create", "get", "list", "watch", "delete", "patch", "update"]
+    - apiGroups: ["apps"]
+      resources: ["deployments"]
+      verbs: ["create", "get", "list", "watch", "delete", "patch", "update"]

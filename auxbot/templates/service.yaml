@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-controller
+  labels:
+    app: {{ .Release.Name }}-controller
+spec:
+  type: {{ .Values.controller.service.type }}
+  selector:
+    app: {{ .Release.Name }}-controller
+  ports:
+  - name: api
+    port: {{ .Values.controller.service.ports.api }}
+    targetPort: api
+  - name: grpc
+    port: {{ .Values.controller.service.ports.grpc }}
+    targetPort: grpc
