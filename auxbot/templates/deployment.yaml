@@ -2,8 +2,11 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ .Release.Name }}-controller
+  namespace: {{ .Release.Namespace }}
   labels:
     app: {{ .Release.Name }}-controller
+  annotations:
+    operator.1password.io/autorestart: "true"
 spec:
   replicas: 1
   selector:
@@ -39,19 +42,17 @@ spec:
           periodSeconds: 5
         env:
         - name: K8S_NAMESPACE
-          valueFrom:
-            fieldRef:
-              fieldPath: metadata.namespace
+          value: {{ .Release.Namespace | quote }}
         {{- range $key, $value := .Values.controller.env }}
         - name: {{ $key }}
           value: {{ $value | quote }}
         {{- end }}
-        {{- range $key, $secret := .Values.controller.secrets }}
-        - name: {{ $key }}
+        {{- range .Values.controller.secrets }}
+        - name: {{ . }}
           valueFrom:
             secretKeyRef:
-              name: {{ $secret.name }}
-              key: {{ $secret.key }}
+              name: "{{ .Release.Name }}-secret"
+              key: {{ . }}
         {{- end }}
         {{- with .Values.controller.resources }}
         resources:
