@@ -6,6 +6,7 @@ argo-cd:
     enabled: true
     secret:
       create: false # using 1Password operator instead
+      name: "argocd-notifications-secret"
     cm:
       create: true
     notifiers:
@@ -40,5 +41,3 @@ argo-cd:
           Project: {{`{{.app.spec.project}}`}}
           Namespace: {{`{{.app.spec.destination.namespace}}`}}
           Revision: {{`{{.app.status.sync.revision}}`}}
-    secrets:
-      name: "argocd-notifications-secret"
