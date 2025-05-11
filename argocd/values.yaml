@@ -40,3 +40,5 @@ argo-cd:
           Project: {{`{{.app.spec.project}}`}}
           Namespace: {{`{{.app.spec.destination.namespace}}`}}
           Revision: {{`{{.app.status.sync.revision}}`}}
+    secrets:
+      name: "argocd-notifications-secret"
