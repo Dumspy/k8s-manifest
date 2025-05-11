@@ -6,7 +6,6 @@ argo-cd:
     enabled: true
     secret:
       create: false # using 1Password operator instead
-      name: "argocd-notifications-secret"
     cm:
       create: true
     notifiers:
