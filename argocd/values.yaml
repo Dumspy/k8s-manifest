@@ -2,3 +2,41 @@ argo-cd:
   server:
     service:
       type: LoadBalancer
+  notifications:
+    enabled: true
+    secret:
+      create: false # using 1Password operator instead
+    cm:
+      create: true
+    notifiers:
+      service.slack: |
+        token: $slack-token
+    triggers:
+      trigger.on-sync-status-change: |
+        - when: app.status.sync.status == 'Synced'
+          send: [app-sync-succeeded]
+        - when: app.status.sync.status == 'OutOfSync'
+          send: [app-sync-failed]
+        - when: app.status.sync.status == 'Unknown'
+          send: [app-sync-failed]
+      trigger.on-deployed: |
+        - when: app.status.operationState.phase in ['Succeeded']
+          send: [app-deployed]
+    templates:
+      template.app-sync-succeeded: |
+        message: |
+          :white_check_mark: Application *{{`{{.app.metadata.name}}`}}* has been successfully synced to *{{`{{.app.spec.targetRevision}}`}}*.
+          Project: {{`{{.app.spec.project}}`}}
+          Namespace: {{`{{.app.spec.destination.namespace}}`}}
+      template.app-sync-failed: |
+        message: |
+          :x: Failed to sync application *{{`{{.app.metadata.name}}`}}*.
+          Project: {{`{{.app.spec.project}}`}}
+          Namespace: {{`{{.app.spec.destination.namespace}}`}}
+          Phase: {{`{{.app.status.sync.status}}`}}
+      template.app-deployed: |
+        message: |
+          :rocket: Application *{{`{{.app.metadata.name}}`}}* has been deployed successfully.
+          Project: {{`{{.app.spec.project}}`}}
+          Namespace: {{`{{.app.spec.destination.namespace}}`}}
+          Revision: {{`{{.app.status.sync.revision}}`}}
