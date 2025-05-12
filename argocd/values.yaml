@@ -1,7 +1,7 @@
 argo-cd:
   server:
     service:
-      type: LoadBalancer
+      type: NodePort 
   notifications:
     enabled: true
     secret:
