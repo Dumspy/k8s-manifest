@@ -13,19 +13,101 @@ argo-cd:
         token: $slack-token
         channels: ["deployments"]
     templates:
-      template.slack: |
+      template.app-created: |
         message: |
-          {{.app.metadata.name}} sync status: {{.app.status.operationState.phase}}
-          Health: {{.app.status.health.status}}
+          :new: Application *{{.app.metadata.name}}* has been created.
+          Project: {{.app.spec.project}}
+          Namespace: {{.app.spec.destination.namespace}}
+        slack:
+          channel: deployments
+      template.app-deleted: |
+        message: |
+          :wastebasket: Application *{{.app.metadata.name}}* has been deleted.
+          Project: {{.app.spec.project}}
+          Namespace: {{.app.spec.destination.namespace}}
+        slack:
+          channel: deployments
+      template.app-deployed: |
+        message: |
+          :rocket: Application *{{.app.metadata.name}}* has been deployed successfully.
+          Project: {{.app.spec.project}}
+          Namespace: {{.app.spec.destination.namespace}}
+          Revision: {{.app.status.sync.revision}}
+        slack:
+          channel: deployments
+      template.app-health-degraded: |
+        message: |
+          :warning: Application *{{.app.metadata.name}}* health has degraded.
+          Project: {{.app.spec.project}}
+          Namespace: {{.app.spec.destination.namespace}}
+          Health Status: {{.app.status.health.status}}
+        slack:
+          channel: deployments
+      template.app-sync-failed: |
+        message: |
+          :x: Failed to sync application *{{.app.metadata.name}}*.
+          Project: {{.app.spec.project}}
+          Namespace: {{.app.spec.destination.namespace}}
+          Phase: {{.app.status.operationState.phase}}
+        slack:
+          channel: deployments
+      template.app-sync-running: |
+        message: |
+          :arrows_counterclockwise: Syncing application *{{.app.metadata.name}}*...
+          Project: {{.app.spec.project}}
+          Namespace: {{.app.spec.destination.namespace}}
+        slack:
+          channel: deployments
+      template.app-sync-status-unknown: |
+        message: |
+          :question: Application *{{.app.metadata.name}}* sync status is unknown.
+          Project: {{.app.spec.project}}
+          Namespace: {{.app.spec.destination.namespace}}
           Sync Status: {{.app.status.sync.status}}
+        slack:
+          channel: deployments
+      template.app-sync-succeeded: |
+        message: |
+          :white_check_mark: Application *{{.app.metadata.name}}* has been successfully synced.
+          Project: {{.app.spec.project}}
+          Namespace: {{.app.spec.destination.namespace}}
+          Revision: {{.app.status.sync.revision}}
+        slack:
+          channel: deployments
     triggers:
-      on-sync-succeeded: |
-        - description: Application has been successfully synced
-          when: app.status.operationState.phase in ['Succeeded']
-          send:
-            - slack
+      trigger.on-created: |
+        - when: app.metadata.creationTimestamp != nil
+          send: [app-created]
+      trigger.on-deleted: |
+        - when: app.metadata.deletionTimestamp != nil
+          send: [app-deleted]
+      trigger.on-deployed: |
+        - when: app.status.operationState.phase in ['Succeeded'] and app.status.health.status == 'Healthy'
+          send: [app-deployed]
+      trigger.on-health-degraded: |
+        - when: app.status.health.status == 'Degraded'
+          send: [app-health-degraded]
+      trigger.on-sync-failed: |
+        - when: app.status.operationState.phase in ['Error', 'Failed']
+          send: [app-sync-failed]
+      trigger.on-sync-running: |
+        - when: app.status.operationState.phase in ['Running']
+          send: [app-sync-running]
+      trigger.on-sync-status-unknown: |
+        - when: app.status.sync.status == 'Unknown'
+          send: [app-sync-status-unknown]
+      trigger.on-sync-succeeded: |
+        - when: app.status.operationState.phase in ['Succeeded']
+          send: [app-sync-succeeded]
     subscriptions:
       - recipients:
-          - slack
+          - slack:deployments
         triggers:
-          - on-sync-succeeded
+          - trigger.on-created
+          - trigger.on-deleted
+          - trigger.on-deployed
+          - trigger.on-health-degraded
+          - trigger.on-sync-failed
+          - trigger.on-sync-running
+          - trigger.on-sync-status-unknown
+          - trigger.on-sync-succeeded
