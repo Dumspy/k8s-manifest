@@ -12,9 +12,21 @@ argo-cd:
       service.slack: |
         token: $slack-token
         channels: ["deployments"]
+    templates:
+      template.slack: |
+        message: |
+          {{.app.metadata.name}} sync status: {{.app.status.operationState.phase}}
+          Health: {{.app.status.health.status}}
+          Sync Status: {{.app.status.sync.status}}
+    triggers:
+      on-sync-succeeded: |
+        - description: Application has been successfully synced
+          when: app.status.operationState.phase in ['Succeeded']
+          send:
+            - slack
     subscriptions:
       - recipients:
-          - slack:deployments
+          - slack
         triggers:
           - on-created
           - on-deleted
