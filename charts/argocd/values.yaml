@@ -16,7 +16,7 @@ argo-cd:
     templates:
       template.app-created: |
         message: |
-          :new: Application *{{.app.metadata.name}}* has been created in [ArgoCD]({{ .Values.argocdUrl }}/applications/{{.app.metadata.name}}).
+          :new: Application *{{.app.metadata.name}}* has been created in [ArgoCD](https://internal.rger.dev:30080/applications/{{.app.metadata.name}}).
           Project: {{.app.spec.project}}
           Namespace: {{.app.spec.destination.namespace}}
           Repo: {{.app.spec.source.repoURL}}
@@ -25,7 +25,7 @@ argo-cd:
           channel: deployments
       template.app-deleted: |
         message: |
-          :wastebasket: Application *{{.app.metadata.name}}* has been deleted from [ArgoCD]({{ .Values.argocdUrl }}/applications/{{.app.metadata.name}}).
+          :wastebasket: Application *{{.app.metadata.name}}* has been deleted from [ArgoCD](https://internal.rger.dev:30080/applications/{{.app.metadata.name}}).
           Project: {{.app.spec.project}}
           Namespace: {{.app.spec.destination.namespace}}
         slack:
@@ -37,7 +37,7 @@ argo-cd:
           Namespace: {{.app.spec.destination.namespace}}
           Revision: {{.app.status.sync.revision}}
           Commit Author: {{.app.status.sync.author}}
-          [View in ArgoCD]({{ .Values.argocdUrl }}/applications/{{.app.metadata.name}})
+          [View in ArgoCD](https://internal.rger.dev:30080/applications/{{.app.metadata.name}})
         slack:
           channel: deployments
       template.app-health-degraded: |
@@ -47,7 +47,7 @@ argo-cd:
           Namespace: {{.app.spec.destination.namespace}}
           Health Status: {{.app.status.health.status}}
           Reason: {{.app.status.health.message}}
-          [View in ArgoCD]({{ .Values.argocdUrl }}/applications/{{.app.metadata.name}})
+          [View in ArgoCD](https://internal.rger.dev:30080/applications/{{.app.metadata.name}})
         slack:
           channel: deployments
       template.app-sync-failed: |
@@ -57,7 +57,7 @@ argo-cd:
           Namespace: {{.app.spec.destination.namespace}}
           Phase: {{.app.status.operationState.phase}}
           Message: {{.app.status.operationState.message}}
-          [View in ArgoCD]({{ .Values.argocdUrl }}/applications/{{.app.metadata.name}})
+          [View in ArgoCD](https://internal.rger.dev:30080/applications/{{.app.metadata.name}})
         slack:
           channel: deployments
       template.app-sync-running: |
@@ -65,7 +65,7 @@ argo-cd:
           :arrows_counterclockwise: Syncing application *{{.app.metadata.name}}*...
           Project: {{.app.spec.project}}
           Namespace: {{.app.spec.destination.namespace}}
-          [View in ArgoCD]({{ .Values.argocdUrl }}/applications/{{.app.metadata.name}})
+          [View in ArgoCD](https://internal.rger.dev:30080/applications/{{.app.metadata.name}})
         slack:
           channel: deployments
       template.app-sync-status-unknown: |
@@ -74,7 +74,7 @@ argo-cd:
           Project: {{.app.spec.project}}
           Namespace: {{.app.spec.destination.namespace}}
           Sync Status: {{.app.status.sync.status}}
-          [View in ArgoCD]({{ .Values.argocdUrl }}/applications/{{.app.metadata.name}})
+          [View in ArgoCD](https://internal.rger.dev:30080/applications/{{.app.metadata.name}})
         slack:
           channel: deployments
       template.app-sync-succeeded: |
@@ -83,7 +83,7 @@ argo-cd:
           Project: {{.app.spec.project}}
           Namespace: {{.app.spec.destination.namespace}}
           Revision: {{.app.status.sync.revision}}
-          [View in ArgoCD]({{ .Values.argocdUrl }}/applications/{{.app.metadata.name}})
+          [View in ArgoCD](https://internal.rger.dev:30080/applications/{{.app.metadata.name}})
         slack:
           channel: deployments
       template.app-rollback: |
@@ -92,7 +92,7 @@ argo-cd:
           Project: {{.app.spec.project}}
           Namespace: {{.app.spec.destination.namespace}}
           Rolled back to Revision: {{.app.status.sync.revision}}
-          [View in ArgoCD]({{ .Values.argocdUrl }}/applications/{{.app.metadata.name}})
+          [View in ArgoCD](https://internal.rger.dev:30080/applications/{{.app.metadata.name}})
         slack:
           channel: deployments
     triggers:
@@ -126,4 +126,3 @@ argo-cd:
       trigger.on-manual-sync: |
         - when: app.status.operationState.operation == 'Sync' and app.status.operationState.phase == 'Succeeded' and app.status.operationState.syncResult.revision != app.status.sync.revision
           send: [app-sync-succeeded]
-argocdUrl: https://internal.rger.dev:30080
