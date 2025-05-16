@@ -21,15 +21,11 @@ argo-cd:
           Namespace: {{.app.spec.destination.namespace}}
           Repo: {{.app.spec.source.repoURL}}
           Revision: {{.app.status.sync.revision}}
-        slack:
-          channel: deployments
       template.app-deleted: |
         message: |
           :wastebasket: Application *{{.app.metadata.name}}* has been deleted from <https://internal.rger.dev:30080/applications/{{.app.metadata.name}}|ArgoCD>.
           Project: {{.app.spec.project}}
           Namespace: {{.app.spec.destination.namespace}}
-        slack:
-          channel: deployments
       template.app-deployed: |
         message: |
           :rocket: Application *{{.app.metadata.name}}* has been deployed successfully.
@@ -38,8 +34,6 @@ argo-cd:
           Revision: {{.app.status.sync.revision}}
           Commit Author: {{.app.status.sync.author}}
           <https://internal.rger.dev:30080/applications/{{.app.metadata.name}}|View in ArgoCD>
-        slack:
-          channel: deployments
       template.app-health-degraded: |
         message: |
           :warning: Application *{{.app.metadata.name}}* health has degraded!
@@ -48,8 +42,6 @@ argo-cd:
           Health Status: {{.app.status.health.status}}
           Reason: {{.app.status.health.message}}
           <https://internal.rger.dev:30080/applications/{{.app.metadata.name}}|View in ArgoCD>
-        slack:
-          channel: deployments
       template.app-sync-failed: |
         message: |
           :x: Failed to sync application *{{.app.metadata.name}}*.
@@ -58,16 +50,12 @@ argo-cd:
           Phase: {{.app.status.operationState.phase}}
           Message: {{.app.status.operationState.message}}
           <https://internal.rger.dev:30080/applications/{{.app.metadata.name}}|View in ArgoCD>
-        slack:
-          channel: deployments
       template.app-sync-running: |
         message: |
           :arrows_counterclockwise: Syncing application *{{.app.metadata.name}}*...
           Project: {{.app.spec.project}}
           Namespace: {{.app.spec.destination.namespace}}
           <https://internal.rger.dev:30080/applications/{{.app.metadata.name}}|View in ArgoCD>
-        slack:
-          channel: deployments
       template.app-sync-status-unknown: |
         message: |
           :question: Application *{{.app.metadata.name}}* sync status is unknown.
@@ -75,8 +63,6 @@ argo-cd:
           Namespace: {{.app.spec.destination.namespace}}
           Sync Status: {{.app.status.sync.status}}
           <https://internal.rger.dev:30080/applications/{{.app.metadata.name}}|View in ArgoCD>
-        slack:
-          channel: deployments
       template.app-sync-succeeded: |
         message: |
           :white_check_mark: Application *{{.app.metadata.name}}* has been successfully synced.
@@ -84,8 +70,6 @@ argo-cd:
           Namespace: {{.app.spec.destination.namespace}}
           Revision: {{.app.status.sync.revision}}
           <https://internal.rger.dev:30080/applications/{{.app.metadata.name}}|View in ArgoCD>
-        slack:
-          channel: deployments
       template.app-rollback: |
         message: |
           :rewind: Application *{{.app.metadata.name}}* has been rolled back.
@@ -93,8 +77,6 @@ argo-cd:
           Namespace: {{.app.spec.destination.namespace}}
           Rolled back to Revision: {{.app.status.sync.revision}}
           <https://internal.rger.dev:30080/applications/{{.app.metadata.name}}|View in ArgoCD>
-        slack:
-          channel: deployments
     triggers:
       trigger.on-created: |
         - when: app.metadata.creationTimestamp != nil and app.status.operationState.phase == 'Succeeded'
