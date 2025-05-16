@@ -20,7 +20,7 @@ controller:
 
   env:
     WORKER_IMAGE: "ghcr.io/dumspy/auxbot-worker:latest"
-    INACTIVITY_TIMEOUT_MINUTES: "20"
+    INACTIVITY_TIMEOUT_MINUTES: "21"
 
   secrets: ["DISCORD_TOKEN", "DISCORD_CLIENT_ID", "SENTRY_DSN"]
 
