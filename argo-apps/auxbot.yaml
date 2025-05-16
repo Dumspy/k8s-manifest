@@ -17,7 +17,7 @@ spec:
   project: default
   source:
     repoURL: https://github.com/Dumspy/k8s-manifest
-    path: auxbot
+    path: charts/auxbot
     targetRevision: HEAD
     helm:
       valueFiles:
