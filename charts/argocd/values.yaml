@@ -1,7 +1,10 @@
 argo-cd:
   server:
     service:
-      type: NodePort 
+      type: NodePort
+  configs:
+    params:
+      server.insecure: "true"
   notifications:
     enabled: true
     secret:
