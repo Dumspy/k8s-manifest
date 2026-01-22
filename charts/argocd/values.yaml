@@ -5,6 +5,9 @@ argocd-image-updater:
         api_url: https://ghcr.io
         prefix: ghcr.io
         default: true
+  crds:
+    install: true
+    keep: true
 
 argo-cd:
   server:

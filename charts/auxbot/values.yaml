@@ -1,7 +1,7 @@
 controller:
   image:
     repository: ghcr.io/dumspy/auxbot-controller
-    tag: latest
+    tag: "latest"
     pullPolicy: Always
   
   service:
