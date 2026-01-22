@@ -88,7 +88,7 @@ argo-cd:
         - when: app.metadata.deletionTimestamp != nil
           send: [app-deleted]
       trigger.on-deployed: |
-        - when: app.status.operationState.phase in ['Succeeded'] and app.status.health.status == 'Healthy' and app.status.operationState.operation == 'Sync'
+        - when: app.status.operationState.phase in ['Succeeded'] and app.status.health.status == 'Healthy' and app.status.operationState.operation.sync != nil
           send: [app-deployed]
       trigger.on-health-degraded: |
         - when: app.status.health.status == 'Degraded' and app.status.operationState.phase != 'Running'
@@ -103,11 +103,11 @@ argo-cd:
         - when: app.status.sync.status == 'Unknown'
           send: [app-sync-status-unknown]
       trigger.on-sync-succeeded: |
-        - when: app.status.operationState.phase in ['Succeeded'] and app.status.operationState.operation == 'Sync'
+        - when: app.status.operationState.phase in ['Succeeded'] and app.status.operationState.operation.sync != nil
           send: [app-sync-succeeded]
       trigger.on-rollback: |
-        - when: app.status.operationState.operation == 'Rollback' and app.status.operationState.phase == 'Succeeded'
+        - when: app.status.operationState.phase == 'Succeeded' and app.status.operationState.operation.rollback != nil
           send: [app-rollback]
       trigger.on-manual-sync: |
-        - when: app.status.operationState.operation == 'Sync' and app.status.operationState.phase == 'Succeeded' and app.status.operationState.syncResult.revision != app.status.sync.revision
+        - when: app.status.operationState.phase == 'Succeeded' and app.status.operationState.operation.sync != nil
           send: [app-sync-succeeded]
