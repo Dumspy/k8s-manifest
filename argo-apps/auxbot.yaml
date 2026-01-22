@@ -17,6 +17,7 @@ metadata:
     notifications.argoproj.io/subscribe.on-created.slack: deployments
     notifications.argoproj.io/subscribe.on-deleted.slack: deployments
     notifications.argoproj.io/subscribe.on-rollback.slack: deployments
+    notifications.argoproj.io/subscribe.on-image-updated.slack: deployments
 spec:
   project: default
   source:

@@ -91,6 +91,15 @@ argo-cd:
           Namespace: {{.app.spec.destination.namespace}}
           Rolled back to Revision: {{.app.status.sync.revision}}
           <https://internal.rger.dev:30080/applications/{{.app.metadata.name}}|View in ArgoCD>
+      template.app-image-updated: |
+        message: |
+          :package: Image updated for application *{{.app.metadata.name}}*.
+          Project: {{.app.spec.project}}
+          Namespace: {{.app.spec.destination.namespace}}
+          {{range $image, $newTag := .app.status.summary.images}}
+          Image: {{$image}}
+          {{end}}
+          <https://internal.rger.dev:30080/applications/{{.app.metadata.name}}|View in ArgoCD>
     triggers:
       trigger.on-created: |
         - when: app.metadata.creationTimestamp != nil and app.status.operationState.phase == 'Succeeded'
@@ -122,3 +131,6 @@ argo-cd:
       trigger.on-manual-sync: |
         - when: app.status.operationState.phase == 'Succeeded' and app.status.operationState.operation.sync != nil
           send: [app-sync-succeeded]
+      trigger.on-image-updated: |
+        - when: app.status.operationState.phase == 'Succeeded' and app.status.operationState.initiatedBy.automated == true and app.status.operationState.operation.sync != nil
+          send: [app-image-updated]
