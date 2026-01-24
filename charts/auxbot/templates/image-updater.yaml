@@ -12,6 +12,7 @@ spec:
           imageName: {{ .Values.controller.image.repository }}
           commonUpdateSettings:
             updateStrategy: digest
+            versionConstraint: latest
           manifestTargets:
             helm:
               name: controller.image.repository
