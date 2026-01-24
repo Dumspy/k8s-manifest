@@ -13,4 +13,5 @@ spec:
           updateStrategy: digest
           manifestTargets:
             helm:
-              imageSpec: controller.image
+              name: controller.image.repository
+              tag: controller.image.tag
