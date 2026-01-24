@@ -1,0 +1,16 @@
+apiVersion: argocd-image-updater.argoproj.io/v1alpha1
+kind: ImageUpdater
+metadata:
+  name: {{ .Release.Name }}
+  namespace: argocd
+spec:
+  applicationRef:
+    name: {{ .Release.Name }}
+    namespace: argocd
+  images:
+    - alias: controller
+      imageName: {{ .Values.controller.image.repository }}
+      updateStrategy: digest
+      manifestTargets:
+        helm:
+          imageSpec: controller.image

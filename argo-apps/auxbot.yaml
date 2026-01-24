@@ -4,10 +4,6 @@ metadata:
   name: auxbot
   namespace: argocd
   annotations:
-    argocd-image-updater.argoproj.io/image-list: controller=ghcr.io/dumspy/auxbot-controller:latest
-    argocd-image-updater.argoproj.io/controller.update-strategy: digest
-    argocd-image-updater.argoproj.io/controller.helm.image-name: controller.image.repository
-    argocd-image-updater.argoproj.io/controller.helm.image-tag: controller.image.tag
     notifications.argoproj.io/subscribe.on-sync-succeeded.slack: deployments
     notifications.argoproj.io/subscribe.on-sync-failed.slack: deployments
     notifications.argoproj.io/subscribe.on-deployed.slack: deployments
