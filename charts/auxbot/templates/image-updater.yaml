@@ -4,13 +4,13 @@ metadata:
   name: {{ .Release.Name }}
   namespace: argocd
 spec:
-  applicationRef:
-    name: {{ .Release.Name }}
-    namespace: argocd
-  images:
-    - alias: controller
-      imageName: {{ .Values.controller.image.repository }}
-      updateStrategy: digest
-      manifestTargets:
-        helm:
-          imageSpec: controller.image
+  namespace: argocd
+  applicationRefs:
+    - namePattern: {{ .Release.Name }}
+      images:
+        - alias: controller
+          imageName: {{ .Values.controller.image.repository }}
+          updateStrategy: digest
+          manifestTargets:
+            helm:
+              imageSpec: controller.image
