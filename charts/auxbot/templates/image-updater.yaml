@@ -10,7 +10,8 @@ spec:
       images:
         - alias: controller
           imageName: {{ .Values.controller.image.repository }}
-          updateStrategy: digest
+          commonUpdateSettings:
+            updateStrategy: digest
           manifestTargets:
             helm:
               name: controller.image.repository
