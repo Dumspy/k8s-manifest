@@ -28,109 +28,199 @@ argo-cd:
         icon: https://argo-cd.readthedocs.io/en/stable/assets/logo.png
         channels: ["deployments"]
     templates:
-      template.app-created: |
-        message: |
-          :new: Application *{{.app.metadata.name}}* has been created in <https://internal.rger.dev:30080/applications/{{.app.metadata.name}}|ArgoCD>.
-          Project: {{.app.spec.project}}
-          Namespace: {{.app.spec.destination.namespace}}
-          Repo: {{.app.spec.source.repoURL}}
-          Revision: {{.app.status.sync.revision}}
-      template.app-deleted: |
-        message: |
-          :wastebasket: Application *{{.app.metadata.name}}* has been deleted from <https://internal.rger.dev:30080/applications/{{.app.metadata.name}}|ArgoCD>.
-          Project: {{.app.spec.project}}
-          Namespace: {{.app.spec.destination.namespace}}
       template.app-deployed: |
-        message: |
-          :rocket: Application *{{.app.metadata.name}}* has been deployed successfully.
-          Project: {{.app.spec.project}}
-          Namespace: {{.app.spec.destination.namespace}}
-          Revision: {{.app.status.sync.revision}}
-          Commit Author: {{.app.status.sync.author}}
-          <https://internal.rger.dev:30080/applications/{{.app.metadata.name}}|View in ArgoCD>
-      template.app-health-degraded: |
-        message: |
-          :warning: Application *{{.app.metadata.name}}* health has degraded!
-          Project: {{.app.spec.project}}
-          Namespace: {{.app.spec.destination.namespace}}
-          Health Status: {{.app.status.health.status}}
-          Reason: {{.app.status.health.message}}
-          <https://internal.rger.dev:30080/applications/{{.app.metadata.name}}|View in ArgoCD>
+        slack:
+          attachments: |
+            [{
+              "color": "#18be52",
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": ":rocket: *{{.app.metadata.name}}* deployed to `{{.app.spec.destination.namespace}}`"
+                  }
+                },
+                {
+                  "type": "section",
+                  "fields": [
+                    {"type": "mrkdwn", "text": "*Revision:*\n`{{.app.status.sync.revision | substr 0 7}}`"},
+                    {"type": "mrkdwn", "text": "*Repo:*\n<{{.app.spec.source.repoURL}}|{{.app.spec.source.repoURL | replace "https://github.com/" "" | replace ".git" ""}}>"}
+                  ]
+                },
+                {
+                  "type": "context",
+                  "elements": [{"type": "mrkdwn", "text": "<http://argocd.internal.rger.dev/applications/argocd/{{.app.metadata.name}}|View in ArgoCD>"}]
+                }
+              ]
+            }]
       template.app-sync-failed: |
-        message: |
-          :x: Failed to sync application *{{.app.metadata.name}}*.
-          Project: {{.app.spec.project}}
-          Namespace: {{.app.spec.destination.namespace}}
-          Phase: {{.app.status.operationState.phase}}
-          Message: {{.app.status.operationState.message}}
-          <https://internal.rger.dev:30080/applications/{{.app.metadata.name}}|View in ArgoCD>
-      template.app-sync-running: |
-        message: |
-          :arrows_counterclockwise: Syncing application *{{.app.metadata.name}}*...
-          Project: {{.app.spec.project}}
-          Namespace: {{.app.spec.destination.namespace}}
-          <https://internal.rger.dev:30080/applications/{{.app.metadata.name}}|View in ArgoCD>
-      template.app-sync-status-unknown: |
-        message: |
-          :question: Application *{{.app.metadata.name}}* sync status is unknown.
-          Project: {{.app.spec.project}}
-          Namespace: {{.app.spec.destination.namespace}}
-          Sync Status: {{.app.status.sync.status}}
-          <https://internal.rger.dev:30080/applications/{{.app.metadata.name}}|View in ArgoCD>
+        slack:
+          attachments: |
+            [{
+              "color": "#e53935",
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": ":x: *{{.app.metadata.name}}* sync failed"
+                  }
+                },
+                {
+                  "type": "section",
+                  "fields": [
+                    {"type": "mrkdwn", "text": "*Namespace:*\n`{{.app.spec.destination.namespace}}`"},
+                    {"type": "mrkdwn", "text": "*Phase:*\n`{{.app.status.operationState.phase}}`"}
+                  ]
+                },
+                {{if .app.status.operationState.message}}
+                {
+                  "type": "section",
+                  "text": {"type": "mrkdwn", "text": "*Error:*\n```{{.app.status.operationState.message}}```"}
+                },
+                {{end}}
+                {
+                  "type": "context",
+                  "elements": [{"type": "mrkdwn", "text": "<http://argocd.internal.rger.dev/applications/argocd/{{.app.metadata.name}}|View in ArgoCD>"}]
+                }
+              ]
+            }]
+      template.app-health-degraded: |
+        slack:
+          attachments: |
+            [{
+              "color": "#ff9800",
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": ":warning: *{{.app.metadata.name}}* health degraded"
+                  }
+                },
+                {
+                  "type": "section",
+                  "fields": [
+                    {"type": "mrkdwn", "text": "*Namespace:*\n`{{.app.spec.destination.namespace}}`"},
+                    {"type": "mrkdwn", "text": "*Health:*\n`{{.app.status.health.status}}`"}
+                  ]
+                },
+                {{if .app.status.health.message}}
+                {
+                  "type": "section",
+                  "text": {"type": "mrkdwn", "text": "*Reason:*\n{{.app.status.health.message}}"}
+                },
+                {{end}}
+                {
+                  "type": "context",
+                  "elements": [{"type": "mrkdwn", "text": "<http://argocd.internal.rger.dev/applications/argocd/{{.app.metadata.name}}|View in ArgoCD>"}]
+                }
+              ]
+            }]
       template.app-sync-succeeded: |
-        message: |
-          :white_check_mark: Application *{{.app.metadata.name}}* has been successfully synced.
-          Project: {{.app.spec.project}}
-          Namespace: {{.app.spec.destination.namespace}}
-          Revision: {{.app.status.sync.revision}}
-          <https://internal.rger.dev:30080/applications/{{.app.metadata.name}}|View in ArgoCD>
+        slack:
+          attachments: |
+            [{
+              "color": "#18be52",
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": ":white_check_mark: *{{.app.metadata.name}}* synced successfully"
+                  }
+                },
+                {
+                  "type": "section",
+                  "fields": [
+                    {"type": "mrkdwn", "text": "*Namespace:*\n`{{.app.spec.destination.namespace}}`"},
+                    {"type": "mrkdwn", "text": "*Revision:*\n`{{.app.status.sync.revision | substr 0 7}}`"}
+                  ]
+                },
+                {
+                  "type": "context",
+                  "elements": [{"type": "mrkdwn", "text": "<http://argocd.internal.rger.dev/applications/argocd/{{.app.metadata.name}}|View in ArgoCD>"}]
+                }
+              ]
+            }]
       template.app-rollback: |
-        message: |
-          :rewind: Application *{{.app.metadata.name}}* has been rolled back.
-          Project: {{.app.spec.project}}
-          Namespace: {{.app.spec.destination.namespace}}
-          Rolled back to Revision: {{.app.status.sync.revision}}
-          <https://internal.rger.dev:30080/applications/{{.app.metadata.name}}|View in ArgoCD>
+        slack:
+          attachments: |
+            [{
+              "color": "#9c27b0",
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": ":rewind: *{{.app.metadata.name}}* rolled back"
+                  }
+                },
+                {
+                  "type": "section",
+                  "fields": [
+                    {"type": "mrkdwn", "text": "*Namespace:*\n`{{.app.spec.destination.namespace}}`"},
+                    {"type": "mrkdwn", "text": "*Revision:*\n`{{.app.status.sync.revision | substr 0 7}}`"}
+                  ]
+                },
+                {
+                  "type": "context",
+                  "elements": [{"type": "mrkdwn", "text": "<http://argocd.internal.rger.dev/applications/argocd/{{.app.metadata.name}}|View in ArgoCD>"}]
+                }
+              ]
+            }]
       template.app-image-updated: |
-        message: |
-          :package: Image updated for application *{{.app.metadata.name}}*.
-          Project: {{.app.spec.project}}
-          Namespace: {{.app.spec.destination.namespace}}
-          {{range $image, $newTag := .app.status.summary.images}}
-          Image: {{$image}}
-          {{end}}
-          <https://internal.rger.dev:30080/applications/{{.app.metadata.name}}|View in ArgoCD>
+        slack:
+          attachments: |
+            [{
+              "color": "#2196f3",
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": ":package: *{{.app.metadata.name}}* image updated"
+                  }
+                },
+                {
+                  "type": "section",
+                  "fields": [
+                    {"type": "mrkdwn", "text": "*Namespace:*\n`{{.app.spec.destination.namespace}}`"},
+                    {"type": "mrkdwn", "text": "*Revision:*\n`{{.app.status.sync.revision | substr 0 7}}`"}
+                  ]
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*Images:*\n{{range .app.status.summary.images}}`{{.}}`\n{{end}}"
+                  }
+                },
+                {
+                  "type": "context",
+                  "elements": [{"type": "mrkdwn", "text": "<http://argocd.internal.rger.dev/applications/argocd/{{.app.metadata.name}}|View in ArgoCD>"}]
+                }
+              ]
+            }]
     triggers:
-      trigger.on-created: |
-        - when: app.metadata.creationTimestamp != nil and app.status.operationState.phase == 'Succeeded'
-          send: [app-created]
-      trigger.on-deleted: |
-        - when: app.metadata.deletionTimestamp != nil
-          send: [app-deleted]
       trigger.on-deployed: |
         - when: app.status.operationState.phase in ['Succeeded'] and app.status.health.status == 'Healthy' and app.status.operationState.operation.sync != nil
           send: [app-deployed]
+          oncePer: app.status.sync.revision
       trigger.on-health-degraded: |
         - when: app.status.health.status == 'Degraded' and app.status.operationState.phase != 'Running'
           send: [app-health-degraded]
+          oncePer: app.status.health.status
       trigger.on-sync-failed: |
         - when: app.status.operationState.phase in ['Error', 'Failed']
           send: [app-sync-failed]
-      trigger.on-sync-running: |
-        - when: app.status.operationState.phase in ['Running']
-          send: [app-sync-running]
-      trigger.on-sync-status-unknown: |
-        - when: app.status.sync.status == 'Unknown'
-          send: [app-sync-status-unknown]
-      trigger.on-sync-succeeded: |
-        - when: app.status.operationState.phase in ['Succeeded'] and app.status.operationState.operation.sync != nil
-          send: [app-sync-succeeded]
+          oncePer: app.status.operationState.startedAt
       trigger.on-rollback: |
         - when: app.status.operationState.phase == 'Succeeded' and app.status.operationState.operation.rollback != nil
           send: [app-rollback]
-      trigger.on-manual-sync: |
-        - when: app.status.operationState.phase == 'Succeeded' and app.status.operationState.operation.sync != nil
-          send: [app-sync-succeeded]
+          oncePer: app.status.sync.revision
       trigger.on-image-updated: |
         - when: app.status.operationState.phase == 'Succeeded' and app.status.operationState.initiatedBy.automated == true and app.status.operationState.operation.sync != nil
           send: [app-image-updated]
+          oncePer: app.status.sync.revision
