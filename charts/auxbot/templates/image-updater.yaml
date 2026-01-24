@@ -9,10 +9,9 @@ spec:
     - namePattern: {{ .Release.Name }}
       images:
         - alias: controller
-          imageName: {{ .Values.controller.image.repository }}
+          imageName: "{{ .Values.controller.image.repository }}:{{ .Values.controller.image.tag }}"
           commonUpdateSettings:
             updateStrategy: digest
-            versionConstraint: latest
           manifestTargets:
             helm:
               name: controller.image.repository
