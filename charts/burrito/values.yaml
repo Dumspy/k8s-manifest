@@ -1,4 +1,13 @@
 burrito:
+  controller:
+    deployment:
+      replicas: 0
+  server:
+    deployment:
+      replicas: 0
+    service:
+      type: NodePort
+
   config:
     burrito:
       datastore:
@@ -20,7 +29,3 @@ burrito:
       envFrom:
         - secretRef:
             name: burrito-datastore-s3
-
-  server:
-    service:
-      type: NodePort
