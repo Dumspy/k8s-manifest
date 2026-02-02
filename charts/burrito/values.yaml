@@ -1,19 +1,26 @@
 burrito:
-  config:
-    burrito:
-      datastore:
-        storage:
-          mock: true
-          s3:
-            bucket: ""
+   config:
+     burrito:
+       datastore:
+         storage:
+           mock: false
+           s3:
+             bucket: "infra-tofu-state"
+             usePathStyle: true
 
-  tenants:
-    - namespace:
-        create: true
-        name: "infra-tofu"
-      serviceAccounts:
-        - name: "infra-tofu-runner"
+   tenants:
+     - namespace:
+         create: true
+         name: "infra-tofu"
+       serviceAccounts:
+         - name: "infra-tofu-runner"
 
-  server:
-    service:
-      type: NodePort
+   datastore:
+     deployment:
+       envFrom:
+         - secretRef:
+             name: burrito-datastore-s3
+
+   server:
+     service:
+       type: NodePort
