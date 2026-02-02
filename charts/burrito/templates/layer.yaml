@@ -7,7 +7,7 @@ spec:
   opentofu:
     enabled: true
   path: "terraform"
-  branch: "main"
+  branch: "master"
   repository:
     name: infra-tofu
     namespace: infra-tofu
