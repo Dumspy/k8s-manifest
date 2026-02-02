@@ -1,0 +1,17 @@
+apiVersion: config.terraform.padok.cloud/v1alpha1
+kind: TerraformLayer
+metadata:
+  name: infra-tofu
+  namespace: infra-tofu
+spec:
+  opentofu:
+    enabled: true
+  path: "terraform"
+  branch: "main"
+  repository:
+    name: infra-tofu
+    namespace: infra-tofu
+  overrideRunnerSpec:
+    envFrom:
+      - secretRef:
+          name: infra-tofu-secrets
