@@ -12,6 +12,10 @@ spec:
     name: infra-tofu
     namespace: infra-tofu
   overrideRunnerSpec:
+    command: ["/bin/sh"]
+    args:
+      - "-c"
+      - "apk add --no-cache gcompat && exec burrito runner start"
     envFrom:
       - secretRef:
           name: infra-tofu-secrets
