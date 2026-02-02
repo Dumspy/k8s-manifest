@@ -1,0 +1,19 @@
+burrito:
+  config:
+    burrito:
+      datastore:
+        storage:
+          mock: true
+          s3:
+            bucket: ""
+
+  tenants:
+    - namespace:
+        create: true
+        name: "infra-tofu"
+      serviceAccounts:
+        - name: "infra-tofu-runner"
+
+  server:
+    service:
+      type: NodePort

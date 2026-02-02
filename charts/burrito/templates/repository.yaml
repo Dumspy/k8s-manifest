@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: infra-tofu-github-app
+  namespace: infra-tofu
+  annotations:
+    operator.1password.io/item-path: "vaults/ksplpxkiblaftafiljqytehbcy/items/qb7ck7jjoc7ijk3xpo6whecvhm"
+type: credentials.burrito.tf/repository
+stringData:
+  provider: github
+  url: https://github.com/Dumspy/infra-tofu
+---
+apiVersion: config.terraform.padok.cloud/v1alpha1
+kind: TerraformRepository
+metadata:
+  name: infra-tofu
+  namespace: infra-tofu
+spec:
+  repository:
+    url: https://github.com/Dumspy/infra-tofu
+  terraform:
+    enabled: true

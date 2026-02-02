@@ -1,0 +1,6 @@
+dependencies:
+- name: burrito
+  repository: oci://ghcr.io/padok-team/charts
+  version: 0.9.2
+digest: sha256:3c6b3d5f372046fc93242f01371f4b594d738198f9b4f86e28e8f29df5ac0903
+generated: "2026-02-02T17:24:28.185210948Z"
