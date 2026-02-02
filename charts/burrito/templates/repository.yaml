@@ -4,5 +4,7 @@ metadata:
   name: infra-tofu
   namespace: infra-tofu
 spec:
+  opentofu:
+    enabled: true
   repository:
     url: https://github.com/Dumspy/infra-tofu
