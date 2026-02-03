@@ -1,7 +1,7 @@
-  atlantis:
-    image:
-      tag: v0.40.0
-      pullPolicy: IfNotPresent
+atlantis:
+  image:
+    tag: v0.40.0
+    pullPolicy: IfNotPresent
 
   # Repository allowlist
   orgAllowlist: "github.com/Dumspy/infra-tofu"
