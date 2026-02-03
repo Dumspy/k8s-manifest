@@ -12,6 +12,11 @@ atlantis:
     ATLANTIS_DATA_DIR: "/atlantis"
     ATLANTIS_ATLANTIS_URL: "https://atlantis.rger.dev"
     ATLANTIS_GH_APP_KEY_FILE: "/var/secrets/github-app/key.pem"
+    ATLANTIS_DEFAULT_TF_DISTRIBUTION: opentofu
+    ATLANTIS_ALLOWED_OVERRIDES: "[workflow, apply_requirements]"
+
+  # Use OpenTofu instead of Terraform
+  defaultTFDistribution: opentofu
 
   # GitHub App credentials via environmentSecrets
   environmentSecrets:
