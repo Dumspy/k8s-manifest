@@ -1,77 +1,77 @@
-image:
-  tag: v0.32.0
-  pullPolicy: IfNotPresent
+atlantis:
+  image:
+    tag: v0.32.0
+    pullPolicy: IfNotPresent
 
-# Repository allowlist
-orgAllowlist: "github.com/Dumspy/infra-tofu"
+  # Repository allowlist
+  orgAllowlist: "github.com/Dumspy/infra-tofu"
 
-# Server configuration
-environment:
-  ATLANTIS_PORT: "4141"
-  ATLANTIS_DATA_DIR: "/atlantis"
-  ATLANTIS_ATLANTIS_URL: "https://atlantis.rger.dev"
+  # Server configuration
+  environment:
+    ATLANTIS_PORT: "4141"
+    ATLANTIS_DATA_DIR: "/atlantis"
+    ATLANTIS_ATLANTIS_URL: "https://atlantis.rger.dev"
+    ATLANTIS_GH_APP_KEY_FILE: "/var/secrets/github-app/private-key"
 
-# GitHub App credentials via environmentSecrets
-environmentSecrets:
-  - name: ATLANTIS_GH_APP_ID
-    secretKeyRef:
-      name: atlantis-github-app
-      key: app-id
-  - name: ATLANTIS_GH_APP_INSTALLATION_ID
-    secretKeyRef:
-      name: atlantis-github-app
-      key: installation-id
-  - name: ATLANTIS_GH_APP_KEY_FILE
-    value: "/var/secrets/github-app/private-key"
-  - name: ATLANTIS_GH_WEBHOOK_SECRET
-    secretKeyRef:
-      name: atlantis-github-app
-      key: webhook-secret
+  # GitHub App credentials via environmentSecrets
+  environmentSecrets:
+    - name: ATLANTIS_GH_APP_ID
+      secretKeyRef:
+        name: atlantis-vcs-credentials
+        key: app-id
+    - name: ATLANTIS_GH_APP_INSTALLATION_ID
+      secretKeyRef:
+        name: atlantis-vcs-credentials
+        key: installation-id
+    - name: ATLANTIS_GH_WEBHOOK_SECRET
+      secretKeyRef:
+        name: atlantis-vcs-credentials
+        key: webhook-secret
 
-# Mount GitHub App secret as volume for private key file
-extraVolumes:
-  - name: github-app-key
-    secret:
-      secretName: atlantis-github-app
-      items:
-        - key: private-key
-          path: private-key
+  # Mount GitHub App secret as volume for private key file
+  extraVolumes:
+    - name: github-app-key
+      secret:
+        secretName: atlantis-vcs-credentials
+        items:
+          - key: private-key
+            path: private-key
 
-extraVolumeMounts:
-  - name: github-app-key
-    mountPath: /var/secrets/github-app
-    readOnly: true
+  extraVolumeMounts:
+    - name: github-app-key
+      mountPath: /var/secrets/github-app
+      readOnly: true
 
-# Service configuration - ClusterIP (exposed via cloudflare tunnel)
-service:
-  type: ClusterIP
-  port: 80
+  # Service configuration - ClusterIP (exposed via cloudflare tunnel)
+  service:
+    type: ClusterIP
+    port: 80
 
-# Ingress disabled - using cloudflare tunnel instead
-ingress:
-  enabled: false
+  # Ingress disabled - using cloudflare tunnel instead
+  ingress:
+    enabled: false
 
-# Resource requirements per AGENTS.md standards
-resources:
-  requests:
-    memory: 256Mi
-    cpu: 100m
-  limits:
-    memory: 512Mi
-    cpu: 500m
+  # Resource requirements per AGENTS.md standards
+  resources:
+    requests:
+      memory: 256Mi
+      cpu: 100m
+    limits:
+      memory: 512Mi
+      cpu: 500m
 
-# Liveness probe - Atlantis needs 30s to start (default 5s is too short)
-livenessProbe:
-  initialDelaySeconds: 30
+  # Liveness probe - Atlantis needs 30s to start (default 5s is too short)
+  livenessProbe:
+    initialDelaySeconds: 30
 
-# Container security context
-containerSecurityContext:
-  allowPrivilegeEscalation: false
-  readOnlyRootFilesystem: false
-  runAsNonRoot: true
-  runAsUser: 1000
-  runAsGroup: 1000
+  # Container security context
+  containerSecurityContext:
+    allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: false
+    runAsNonRoot: true
+    runAsUser: 1000
+    runAsGroup: 1000
 
-# OpenTofu provider credentials - loaded from 1Password secret
-loadEnvFromSecrets:
-  - opentofu-provider-secrets
+  # OpenTofu provider credentials - loaded from 1Password secret
+  loadEnvFromSecrets:
+    - opentofu-provider-secrets
