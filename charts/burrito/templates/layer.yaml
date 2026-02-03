@@ -18,10 +18,10 @@ spec:
         command:
           - sh
           - '-c'
-          - 'apk add --no-cache --root /tmp/gcompat gcompat'
+          - 'apk add --no-cache gcompat && mkdir -p /usr/local/gcompat/lib && find /lib /usr/lib -name "ld-linux*.so*" -o -name "libc.so*" -o -name "libdl.so*" -o -name "libm.so*" -o -name "libpthread.so*" | xargs -I {} cp -v {} /usr/local/gcompat/lib/'
         volumeMounts:
           - name: gcompat
-            mountPath: /tmp/gcompat
+            mountPath: /usr/local/gcompat
     volumes:
       - name: gcompat
         emptyDir: {}
@@ -30,7 +30,7 @@ spec:
         mountPath: /usr/local/gcompat
     env:
       - name: LD_LIBRARY_PATH
-        value: /usr/local/gcompat/lib:/usr/local/gcompat/lib64
+        value: /usr/local/gcompat/lib
     envFrom:
       - secretRef:
           name: infra-tofu-secrets
