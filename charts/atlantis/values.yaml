@@ -64,14 +64,6 @@ atlantis:
   livenessProbe:
     initialDelaySeconds: 30
 
-  # Container security context
-  containerSecurityContext:
-    allowPrivilegeEscalation: false
-    readOnlyRootFilesystem: false
-    runAsNonRoot: true
-    runAsUser: 1000
-    runAsGroup: 1000
-
   # OpenTofu provider credentials - loaded from 1Password secret
   loadEnvFromSecrets:
     - opentofu-provider-secrets
