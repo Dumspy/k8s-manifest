@@ -11,7 +11,7 @@ atlantis:
     ATLANTIS_PORT: "4141"
     ATLANTIS_DATA_DIR: "/atlantis"
     ATLANTIS_ATLANTIS_URL: "https://atlantis.rger.dev"
-    ATLANTIS_GH_APP_KEY_FILE: "/var/secrets/github-app/private-key"
+    ATLANTIS_GH_APP_KEY_FILE: "/var/secrets/github-app/key.pem"
 
   # GitHub App credentials via environmentSecrets
   environmentSecrets:
@@ -26,7 +26,7 @@ atlantis:
     - name: ATLANTIS_GH_WEBHOOK_SECRET
       secretKeyRef:
         name: atlantis-vcs-credentials
-        key: webhook-secret
+        key: github_secret
 
   # Mount GitHub App secret as volume for private key file
   extraVolumes:
@@ -34,8 +34,8 @@ atlantis:
       secret:
         secretName: atlantis-vcs-credentials
         items:
-          - key: private-key
-            path: private-key
+          - key: key.pem
+            path: key.pem
 
   extraVolumeMounts:
     - name: github-app-key
