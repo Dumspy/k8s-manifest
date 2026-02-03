@@ -21,14 +21,26 @@ environmentSecrets:
     secretKeyRef:
       name: atlantis-github-app
       key: installation-id
-  - name: ATLANTIS_GH_APP_KEY
-    secretKeyRef:
-      name: atlantis-github-app
-      key: private-key
+  - name: ATLANTIS_GH_APP_KEY_FILE
+    value: "/var/secrets/github-app/private-key"
   - name: ATLANTIS_GH_WEBHOOK_SECRET
     secretKeyRef:
       name: atlantis-github-app
       key: webhook-secret
+
+# Mount GitHub App secret as volume for private key file
+extraVolumes:
+  - name: github-app-key
+    secret:
+      secretName: atlantis-github-app
+      items:
+        - key: private-key
+          path: private-key
+
+extraVolumeMounts:
+  - name: github-app-key
+    mountPath: /var/secrets/github-app
+    readOnly: true
 
 # Service configuration - ClusterIP (exposed via cloudflare tunnel)
 service:
