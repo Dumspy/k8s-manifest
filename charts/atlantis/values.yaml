@@ -75,3 +75,7 @@ atlantis:
   # OpenTofu provider credentials - loaded from 1Password secret
   loadEnvFromSecrets:
     - opentofu-provider-secrets
+
+  # GitHub App needs --write-git-creds to support cloning
+  extraArgs:
+    - --write-git-creds
