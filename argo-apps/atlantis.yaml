@@ -1,7 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: burrito
+  name: atlantis
   namespace: argocd
   annotations:
     notifications.argoproj.io/subscribe.on-deployed.slack: deployments
@@ -12,14 +12,14 @@ spec:
   project: default
   source:
     repoURL: https://github.com/Dumspy/k8s-manifest
-    path: charts/burrito
+    path: charts/atlantis
     targetRevision: HEAD
     helm:
       valueFiles:
         - values.yaml
   destination:
     server: https://kubernetes.default.svc
-    namespace: burrito-system
+    namespace: atlantis
   syncPolicy:
     automated:
       prune: true

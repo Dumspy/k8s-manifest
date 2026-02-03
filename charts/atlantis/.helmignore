@@ -17,7 +17,8 @@
 *.orig
 *~
 # Various IDEs
-.project
+.vscode/
 .idea/
 *.tmproj
-.vscode/
+*.tmproject
+tmtags

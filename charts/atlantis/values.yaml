@@ -1,0 +1,92 @@
+atlantis:
+  image:
+    repository: ghcr.io/runatlantis/atlantis
+    tag: v0.32.0
+    pullPolicy: IfNotPresent
+
+  # GitHub App authentication
+  github:
+    user: "infra-tofu-bot"
+    secretFromSecretRef:
+      name: atlantis-github-app
+      key: webhook-secret
+
+  # Repository allowlist
+  orgAllowlist: "github.com/Dumspy/infra-tofu"
+
+  # Server configuration
+  environment:
+    ATLANTIS_PORT: "4141"
+    ATLANTIS_GH_APP_ENABLED: "true"
+    ATLANTIS_DATA_DIR: "/atlantis"
+
+  # GitHub App credentials from secrets
+  environmentSecrets:
+    - name: ATLANTIS_GH_APP_ID
+      secretKeyRef:
+        name: atlantis-github-app
+        key: app-id
+    - name: ATLANTIS_GH_APP_INSTALLATION_ID
+      secretKeyRef:
+        name: atlantis-github-app
+        key: installation-id
+    - name: ATLANTIS_GH_APP_KEY
+      secretKeyRef:
+        name: atlantis-github-app
+        key: private-key
+
+  # Service configuration - ClusterIP (exposed via cloudflare tunnel)
+  service:
+    type: ClusterIP
+    port: 80
+    targetPort: 4141
+
+  # Ingress disabled - using cloudflare tunnel instead
+  ingress:
+    enabled: false
+
+  # Persistent storage for plan files
+  volumeClaim:
+    enabled: true
+    dataStorage: 5Gi
+    dataStorageClass: ""
+
+  # Resource requirements per AGENTS.md standards
+  resources:
+    requests:
+      memory: 256Mi
+      cpu: 100m
+    limits:
+      memory: 512Mi
+      cpu: 500m
+
+  # Liveness probe
+  livenessProbe:
+    enabled: true
+    periodSeconds: 60
+    initialDelaySeconds: 30
+    timeoutSeconds: 5
+    failureThreshold: 3
+    path: /healthz
+
+  # Readiness probe
+  readinessProbe:
+    enabled: true
+    periodSeconds: 60
+    initialDelaySeconds: 5
+    timeoutSeconds: 5
+    failureThreshold: 3
+    path: /healthz
+
+  # Pod security context
+  podTemplate:
+    securityContext:
+      fsGroup: 1000
+
+  # Container security context
+  containerSecurityContext:
+    allowPrivilegeEscalation: false
+    readOnlyRootFilesystem: false
+    runAsNonRoot: true
+    runAsUser: 1000
+    runAsGroup: 1000
