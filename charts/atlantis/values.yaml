@@ -1,7 +1,7 @@
-atlantis:
-  image:
-    tag: v0.32.0
-    pullPolicy: IfNotPresent
+  atlantis:
+    image:
+      tag: v0.40.0
+      pullPolicy: IfNotPresent
 
   # Repository allowlist
   orgAllowlist: "github.com/Dumspy/infra-tofu"
@@ -32,6 +32,7 @@ atlantis:
 
   # Use OpenTofu instead of Terraform
   defaultTFDistribution: opentofu
+  defaultTFVersion: "1.11.0"
 
   # GitHub App credentials via environmentSecrets
   environmentSecrets:
