@@ -90,5 +90,7 @@ atlantis:
     - opentofu-provider-secrets
 
   # GitHub App needs --write-git-creds to support cloning
+  # silence-allowlist-errors prevents commenting on repos not in allowlist
   extraArgs:
     - --write-git-creds
+    - --silence-allowlist-errors
