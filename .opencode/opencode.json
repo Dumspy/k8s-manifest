@@ -1,0 +1,17 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "lsp": {
+    "helm": {
+      "command": ["helm_ls", "serve"],
+      "extensions": [
+        "**/templates/**/*.tpl",
+        "**/templates/**/*.yaml",
+        "**/templates/**/*.yml",
+        "**/helmfile.d/**/*.yaml",
+        "**/helmfile.d/**/*.yml",
+        "**/values*.yaml",
+        "**/values*.yml"
+      ]
+    }
+  }
+}
