@@ -1,0 +1,30 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: monitoring-agent-staging
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/Dumspy/k8s-manifest
+    path: charts/monitoring-agent
+    targetRevision: HEAD
+    helm:
+      # Value override order: base → stage → inline
+      valueFiles:
+        - values.yaml                           # Level 1: Base configuration
+        - values-stages/staging.yaml             # Level 2: Staging stage overrides
+      values: |
+        # Level 3: Inline cluster-specific values
+        global:
+          clusterName: "staging-cluster"
+          hubEndpoint: "100.64.0.2"  # Replace with actual hub Tailscale IP
+  destination:
+    name: staging-cluster
+    namespace: monitoring
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

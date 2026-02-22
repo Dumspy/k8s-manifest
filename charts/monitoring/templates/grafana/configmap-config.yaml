@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-config
+  namespace: {{ .Values.namespace }}
+data:
+  grafana.ini: |
+    [server]
+    root_url = http://localhost:3000
+
+    [security]
+    admin_user = admin
+
+    [users]
+    default_theme = dark
+
+    [log]
+    mode = console
+    level = info

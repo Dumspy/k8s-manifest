@@ -1,0 +1,20 @@
+# Cluster-specific overrides for homelab-k8s cluster
+# Applied after values.yaml and values-stages/production.yaml
+
+global:
+  clusterName: "homelab-k8s"
+  environment: "production"
+  hubEndpoint: "100.64.0.2"  # Replace with actual hub Tailscale IP
+
+# Cluster-specific resource adjustments
+alloy:
+  resources:
+    limits:
+      memory: "768Mi"  # Slightly higher for this cluster
+
+# Custom exporters if needed for this cluster
+# alloy.configMap.content: |
+#   prometheus.scrape "custom_app" {
+#     targets = [{"__address__" = "custom-service:8080"}]
+#     forward_to = [prometheus.remote_write.hub.receiver]
+#   }

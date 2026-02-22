@@ -1,0 +1,64 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: alertmanager
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: alertmanager
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: alertmanager
+  template:
+    metadata:
+      labels:
+        app: alertmanager
+    spec:
+      containers:
+        - name: alertmanager
+          image: "{{ .Values.alertmanager.image.repository }}:{{ .Values.alertmanager.image.tag }}"
+          imagePullPolicy: {{ .Values.alertmanager.image.pullPolicy }}
+          args:
+            - '--config.file=/etc/alertmanager/alertmanager.yml'
+            - '--cluster.listen-address=0.0.0.0:9094'
+          ports:
+            - name: http
+              containerPort: 9093
+            - name: cluster
+              containerPort: 9094
+          env:
+            - name: DISCORD_WEBHOOK
+              valueFrom:
+                secretKeyRef:
+                  name: monitoring-hub-secrets
+                  key: alertmanager_discord_webhook
+            - name: DISCORD_CRITICAL_WEBHOOK
+              valueFrom:
+                secretKeyRef:
+                  name: monitoring-hub-secrets
+                  key: alertmanager_discord_critical_webhook
+          livenessProbe:
+            httpGet:
+              path: /-/healthy
+              port: 9093
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+          readinessProbe:
+            httpGet:
+              path: /-/ready
+              port: 9093
+            initialDelaySeconds: 10
+            periodSeconds: 5
+          volumeMounts:
+            - name: config
+              mountPath: /etc/alertmanager
+          {{- with .Values.alertmanager.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+      volumes:
+        - name: config
+          configMap:
+            name: alertmanager-config

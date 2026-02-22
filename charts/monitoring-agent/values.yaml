@@ -1,0 +1,138 @@
+# Base configuration for all clusters
+# These values can be overridden by:
+# 1. values-stages/<stage>.yaml (production/staging/development)
+# 2. values-clusters/<cluster-name>.yaml (cluster-specific)
+# 3. ArgoCD Application values (inline)
+
+global:
+  clusterName: "spoke-cluster"
+  environment: "production"
+  hubEndpoint: "100.x.x.x"  # Replace with actual hub Tailscale IP
+
+# Grafana Alloy configuration
+alloy:
+  enabled: true
+  image:
+    repository: grafana/alloy
+    tag: "v1.13.1"
+    pullPolicy: IfNotPresent
+
+  resources:
+    requests:
+      memory: "512Mi"
+      cpu: "250m"
+    limits:
+      memory: "1Gi"
+      cpu: "500m"
+
+  configMap:
+    content: |-
+      // --- METRICS COLLECTION ---
+
+      prometheus.exporter.unix "local_system" {
+        set_collectors = ["systemd", "filesystem", "cpu", "meminfo", "disk", "loadavg", "netdev"]
+      }
+
+      prometheus.scrape "metrics_scraper" {
+        targets    = prometheus.exporter.unix.local_system.targets
+        forward_to = [prometheus.remote_write.hub.receiver]
+        scrape_interval = "30s"
+      }
+
+      prometheus.scrape "kube_state_metrics" {
+        targets    = discovery.kubernetes.services.select({
+          namespace = "monitoring",
+          name      = "kube-state-metrics"
+        })
+        forward_to = [prometheus.remote_write.hub.receiver]
+        scrape_interval = "30s"
+      }
+
+      prometheus.remote_write "hub" {
+        endpoint {
+          url = "http://{{ .Values.global.hubEndpoint }}:9090/api/v1/write"
+        }
+
+        // Add external labels to prevent metric collision
+        external_labels = {
+          cluster = "{{ .Values.global.clusterName }}"
+          environment = "{{ .Values.global.environment }}"
+        }
+      }
+
+      // --- LOGS COLLECTION ---
+
+      loki.source.kubernetes "pods" {
+        forward_to = [loki.write.hub.receiver]
+      }
+
+      loki.write "hub" {
+        endpoint {
+          url = "http://{{ .Values.global.hubEndpoint }}:3100/loki/api/v1/push"
+        }
+      }
+
+  serviceAccount:
+    create: true
+
+  rbac:
+    create: true
+    extraRules:
+      - apiGroups: [""]
+        resources: ["nodes", "nodes/proxy", "pods", "services", "endpoints", "namespaces"]
+        verbs: ["get", "list", "watch"]
+
+# Kube-state-metrics configuration
+kube-state-metrics:
+  enabled: true
+  image:
+    repository: registry.k8s.io/kube-state-metrics
+    tag: "v2.14.0"
+
+  resources:
+    requests:
+      memory: "128Mi"
+      cpu: "100m"
+    limits:
+      memory: "256Mi"
+      cpu: "200m"
+
+  serviceAccount:
+    create: true
+
+  rbac:
+    create: true
+
+  collectors:
+    - certificatesigningrequests
+    - configmaps
+    - cronjobs
+    - daemonsets
+    - deployments
+    - endpoints
+    - horizontalpodautoscalers
+    - ingresses
+    - jobs
+    - leases
+    - limitranges
+    - mutatingwebhookconfigurations
+    - namespaces
+    - networkpolicies
+    - nodes
+    - persistentvolumeclaims
+    - persistentvolumes
+    - pods
+    - poddisruptionbudgets
+    - replicasets
+    - replicationcontrollers
+    - resourcequotas
+    - secrets
+    - services
+    - statefulsets
+    - storageclasses
+    - validatingwebhookconfigurations
+    - volumeattachments
+
+# 1Password secret for hub credentials
+onepassword:
+  itemPath: "vaults/infrastructure/items/monitoring-spoke"

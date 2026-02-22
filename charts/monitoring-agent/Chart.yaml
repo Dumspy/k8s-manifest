@@ -1,0 +1,16 @@
+apiVersion: v2
+name: monitoring-agent
+description: Monitoring agent for spoke clusters - Grafana Alloy + Kube-state-metrics
+type: application
+version: 0.1.0
+appVersion: "1.0.0"
+
+dependencies:
+  - name: alloy
+    version: 1.x.x
+    repository: https://grafana.github.io/helm-charts
+    alias: alloy
+  - name: kube-state-metrics
+    version: 7.x.x
+    repository: https://prometheus-community.github.io/helm-charts
+    alias: kube-state-metrics

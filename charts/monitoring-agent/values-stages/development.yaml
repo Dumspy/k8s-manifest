@@ -1,0 +1,20 @@
+# Development environment overrides
+# Applied to all development clusters after base values.yaml
+
+alloy:
+  resources:
+    requests:
+      memory: "128Mi"
+      cpu: "100m"
+    limits:
+      memory: "256Mi"
+      cpu: "200m"
+
+kube-state-metrics:
+  resources:
+    requests:
+      memory: "32Mi"
+      cpu: "25m"
+    limits:
+      memory: "64Mi"
+      cpu: "50m"

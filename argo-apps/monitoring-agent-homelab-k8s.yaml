@@ -1,0 +1,31 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: monitoring-agent-homelab-k8s
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/Dumspy/k8s-manifest
+    path: charts/monitoring-agent
+    targetRevision: HEAD
+    helm:
+      # Value override order: base → stage → cluster-specific → inline
+      valueFiles:
+        - values.yaml                           # Level 1: Base configuration
+        - values-stages/production.yaml         # Level 2: Production stage overrides
+        - values-clusters/homelab-k8s.yaml    # Level 3: Cluster-specific overrides
+      values: |
+        # Level 4: Inline cluster-specific values
+        global:
+          clusterName: "homelab-k8s"
+          hubEndpoint: "100.64.0.2"  # Replace with actual hub Tailscale IP
+  destination:
+    name: homelab-cluster
+    namespace: monitoring
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
