@@ -62,15 +62,7 @@ spec:
                       --set=ON_ERROR_STOP=1 \
                       --set=postgres_user="$POSTGRES_USER" \
                       --set=postgres_password="$POSTGRES_PASSWORD" <<'EOSQL'
-                    DO
-                    $do$
-                    BEGIN
-                      EXECUTE 'ALTER ROLE '
-                        || quote_ident(:'postgres_user')
-                        || ' WITH LOGIN SUPERUSER PASSWORD '
-                        || quote_literal(:'postgres_password');
-                    END
-                    $do$;
+                    ALTER ROLE :"postgres_user" WITH LOGIN SUPERUSER PASSWORD :'postgres_password';
                     EOSQL
           livenessProbe:
             exec:
