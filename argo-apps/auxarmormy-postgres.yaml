@@ -1,7 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: auxarmormy-oci
+  name: auxarmormy-postgres
   namespace: argocd
   annotations:
     notifications.argoproj.io/subscribe.on-deployed.slack: deployments
@@ -14,10 +14,10 @@ spec:
     path: charts/postgresql
     targetRevision: HEAD
     helm:
-      releaseName: auxarmormy
+      releaseName: auxarmormy-postgres
       valueFiles:
         - values.yaml
-        - deployments/auxarmormy.yaml
+        - deployments/auxarmormy-postgres.yaml
   destination:
     name: oci-cluster
     namespace: postgres

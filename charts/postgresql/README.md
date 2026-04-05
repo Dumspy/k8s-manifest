@@ -14,7 +14,7 @@ Shared chart defaults live in `values.yaml`. Deployment-specific overrides live 
 
 Create one override file per database deployment under `deployments/` and reference it from ArgoCD with `valueFiles`.
 
-Example override for the OCI `auxarmormy` deployment:
+Example override for the OCI `auxarmormy-postgres` deployment:
 
 ```yaml
 database:
@@ -35,24 +35,24 @@ The chart creates a `OnePasswordItem` named `<release-name>-secret` using:
 
 That 1Password item must expose this field:
 
-- `password`: password for the PostgreSQL user defined by `database.user`
+- `POSTGRES_PASSWORD`: password for the PostgreSQL user defined by `database.user`
 
 ## How The Secret Is Used
 
-The `password` key is consumed by:
+The `POSTGRES_PASSWORD` key is consumed by:
 
 - PostgreSQL startup, as `POSTGRES_PASSWORD`
 - The password sync hook in the StatefulSet
 
 ## Expected 1Password Item Shape
 
-At minimum, the referenced 1Password item should include a field named `password`.
+At minimum, the referenced 1Password item should include a field named `POSTGRES_PASSWORD`.
 
 Example:
 
 ```text
 Item: postgres-db
-Field: password = <strong password>
+Field: POSTGRES_PASSWORD = <strong password>
 ```
 
 ## Template Fallback
@@ -71,7 +71,7 @@ Example ArgoCD values files:
 ```yaml
 valueFiles:
   - values.yaml
-  - deployments/auxarmormy.yaml
+  - deployments/auxarmormy-postgres.yaml
 ```
 
 ## Services
