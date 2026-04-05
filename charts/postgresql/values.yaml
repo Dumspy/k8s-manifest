@@ -1,0 +1,28 @@
+# Shared defaults. Deployment-specific database and secret values live in deployments/*.yaml.
+
+image:
+  repository: postgres
+  tag: "16.9-alpine"
+  pullPolicy: IfNotPresent
+
+service:
+  directPort: 5432
+
+storage:
+  className: local-path
+  size: 20Gi
+
+nodeSelector:
+  role: database
+
+resources:
+  requests:
+    memory: "512Mi"
+    cpu: "250m"
+  limits:
+    memory: "2Gi"
+    cpu: "1000m"
+
+extraConfig:
+  maxConnections: 200
+  sharedBuffers: 256MB

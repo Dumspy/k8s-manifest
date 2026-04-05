@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-direct
+  namespace: {{ .Release.Namespace }}
+spec:
+  selector:
+    app: {{ .Release.Name }}
+    component: postgres
+  ports:
+    - name: postgres
+      port: {{ .Values.service.directPort }}
+      targetPort: postgres

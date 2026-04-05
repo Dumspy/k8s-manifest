@@ -1,0 +1,107 @@
+{{- $database := .Values.database | default dict -}}
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ .Release.Name }}
+  namespace: {{ .Release.Namespace }}
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+spec:
+  serviceName: {{ .Release.Name }}-headless
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}
+      component: postgres
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}
+        component: postgres
+    spec:
+      nodeSelector:
+        {{- toYaml .Values.nodeSelector | nindent 8 }}
+      containers:
+        - name: postgres
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          args:
+            - -c
+            - max_connections={{ .Values.extraConfig.maxConnections }}
+            - -c
+            - shared_buffers={{ .Values.extraConfig.sharedBuffers }}
+          ports:
+            - name: postgres
+              containerPort: {{ .Values.service.directPort }}
+          env:
+            - name: POSTGRES_DB
+              value: {{ $database.name | default "postgres" | quote }}
+            - name: POSTGRES_USER
+              value: {{ $database.user | default "postgres" | quote }}
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Release.Name }}-secret
+                  key: password
+            - name: PGDATA
+              value: /var/lib/postgresql/data/pgdata
+          lifecycle:
+            postStart:
+              exec:
+                command:
+                  - /bin/sh
+                  - -ec
+                  - |
+                    until pg_isready -U "$POSTGRES_USER" -d "$POSTGRES_DB"; do
+                      sleep 2
+                    done
+
+                    psql \
+                      --username "$POSTGRES_USER" \
+                      --dbname "$POSTGRES_DB" \
+                      --set=ON_ERROR_STOP=1 \
+                      --set=postgres_user="$POSTGRES_USER" \
+                      --set=postgres_password="$POSTGRES_PASSWORD" <<'EOSQL'
+                    DO
+                    $do$
+                    BEGIN
+                      EXECUTE 'ALTER ROLE '
+                        || quote_ident(:'postgres_user')
+                        || ' WITH LOGIN SUPERUSER PASSWORD '
+                        || quote_literal(:'postgres_password');
+                    END
+                    $do$;
+                    EOSQL
+          livenessProbe:
+            exec:
+              command:
+                - /bin/sh
+                - -ec
+                - pg_isready -U "$POSTGRES_USER" -d "$POSTGRES_DB"
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+          readinessProbe:
+            exec:
+              command:
+                - /bin/sh
+                - -ec
+                - pg_isready -U "$POSTGRES_USER" -d "$POSTGRES_DB"
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            timeoutSeconds: 5
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/postgresql/data
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        storageClassName: {{ .Values.storage.className | quote }}
+        resources:
+          requests:
+            storage: {{ .Values.storage.size | quote }}
