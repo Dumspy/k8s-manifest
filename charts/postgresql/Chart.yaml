@@ -1,0 +1,6 @@
+apiVersion: v2
+name: postgresql
+description: Reusable single PostgreSQL database chart
+type: application
+version: 0.3.2
+appVersion: "16.9"

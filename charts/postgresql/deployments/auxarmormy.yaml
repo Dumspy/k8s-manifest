@@ -1,0 +1,8 @@
+# Auxarmormy PostgreSQL deployment overrides for the OCI cluster.
+
+database:
+  name: auxarmormy
+  user: auxarmormy
+
+onePassword:
+  itemPath: "vaults/p364xm4f4uub6cfyzweulklgwa/items/knuooys23mo5jluzxkct5fgeyi"
