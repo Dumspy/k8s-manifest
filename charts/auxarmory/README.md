@@ -26,6 +26,7 @@ Recommended hostnames:
 ## 1Password Layout
 
 Create these 1Password items and point `values.yaml` at their item paths.
+The current `values.yaml` uses placeholder item paths, so fill those in before rollout.
 
 ### Shared item
 

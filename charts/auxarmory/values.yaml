@@ -11,6 +11,7 @@ global:
     tracesSampleRate: 0.1
     release: ""
   onePassword:
+    # TODO: fill in the shared 1Password item path.
     sharedItemPath: vaults/replace-me/items/replace-me
 
 imageUpdater:
@@ -32,6 +33,7 @@ web:
       memory: "512Mi"
       cpu: "500m"
   onePassword:
+    # TODO: fill in the web 1Password item path.
     itemPath: vaults/replace-me/items/replace-me
 
 auth:
@@ -50,6 +52,7 @@ auth:
       memory: "512Mi"
       cpu: "500m"
   onePassword:
+    # TODO: fill in the auth 1Password item path.
     itemPath: vaults/replace-me/items/replace-me
 
 api:
@@ -68,6 +71,7 @@ api:
       memory: "512Mi"
       cpu: "500m"
   onePassword:
+    # TODO: fill in the api 1Password item path.
     itemPath: vaults/replace-me/items/replace-me
 
 worker:
@@ -85,6 +89,7 @@ worker:
       cpu: "500m"
   failureSinkTimeoutMs: 400
   onePassword:
+    # TODO: fill in the worker 1Password item path.
     itemPath: vaults/replace-me/items/replace-me
 
 migration:
@@ -101,6 +106,7 @@ postgresql:
     name: auxarmory
     user: auxarmory
   onePassword:
+    # TODO: fill in the postgres 1Password item path.
     itemPath: vaults/replace-me/items/replace-me
 
 redis:
