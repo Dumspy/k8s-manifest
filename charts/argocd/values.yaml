@@ -29,6 +29,9 @@ argo-cd:
             config:
               clientID: $argocd-github-sso:dex.github.clientID
               clientSecret: $argocd-github-sso:dex.github.clientSecret
+              scopes:
+                - user:email
+                - read:org
     params:
       server.insecure: "true"
     rbac:
