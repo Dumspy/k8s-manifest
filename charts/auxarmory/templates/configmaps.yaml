@@ -1,0 +1,70 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "auxarmory.webConfigMapName" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "auxarmory.labels" . | nindent 4 }}
+    app.kubernetes.io/name: web
+data:
+  NODE_ENV: {{ .Values.global.nodeEnv | quote }}
+  VITE_APP_NAME: {{ .Values.global.appName | quote }}
+  VITE_APP_URL: {{ printf "https://%s" .Values.global.hosts.web | quote }}
+  VITE_AUTH_URL: {{ printf "https://%s" .Values.global.hosts.auth | quote }}
+  VITE_API_URL: {{ printf "https://%s" .Values.global.hosts.api | quote }}
+  VITE_SENTRY_ENV: {{ .Values.global.sentry.environment | quote }}
+  VITE_SENTRY_TRACES_SAMPLE_RATE: {{ .Values.global.sentry.tracesSampleRate | quote }}
+  VITE_SENTRY_RELEASE: {{ .Values.global.sentry.release | quote }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "auxarmory.authConfigMapName" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "auxarmory.labels" . | nindent 4 }}
+    app.kubernetes.io/name: auth
+data:
+  NODE_ENV: {{ .Values.global.nodeEnv | quote }}
+  AUTH_SERVICE_PORT: {{ .Values.auth.service.port | quote }}
+  AUTH_SERVICE_ORIGIN: {{ printf "http://%s:%v" (include "auxarmory.auth.name" .) .Values.auth.service.port | quote }}
+  WEB_ORIGIN: {{ printf "https://%s" .Values.global.hosts.web | quote }}
+  BETTER_AUTH_URL: {{ printf "https://%s" .Values.global.hosts.auth | quote }}
+  AUTH_TRUSTED_ORIGINS: {{ printf "https://%s" .Values.global.hosts.web | quote }}
+  AUTH_COOKIE_DOMAIN: {{ .Values.global.cookieDomain | quote }}
+  SENTRY_ENV: {{ .Values.global.sentry.environment | quote }}
+  SENTRY_TRACES_SAMPLE_RATE: {{ .Values.global.sentry.tracesSampleRate | quote }}
+  SENTRY_RELEASE: {{ .Values.global.sentry.release | quote }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "auxarmory.apiConfigMapName" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "auxarmory.labels" . | nindent 4 }}
+    app.kubernetes.io/name: api
+data:
+  NODE_ENV: {{ .Values.global.nodeEnv | quote }}
+  API_SERVICE_PORT: {{ .Values.api.service.port | quote }}
+  API_SERVICE_ORIGIN: {{ printf "http://%s:%v" (include "auxarmory.api.name" .) .Values.api.service.port | quote }}
+  WEB_ORIGIN: {{ printf "https://%s" .Values.global.hosts.web | quote }}
+  SENTRY_ENV: {{ .Values.global.sentry.environment | quote }}
+  SENTRY_TRACES_SAMPLE_RATE: {{ .Values.global.sentry.tracesSampleRate | quote }}
+  SENTRY_RELEASE: {{ .Values.global.sentry.release | quote }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "auxarmory.workerConfigMapName" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "auxarmory.labels" . | nindent 4 }}
+    app.kubernetes.io/name: worker
+data:
+  NODE_ENV: {{ .Values.global.nodeEnv | quote }}
+  API_SERVICE_ORIGIN: {{ printf "http://%s:%v" (include "auxarmory.api.name" .) .Values.api.service.port | quote }}
+  FAILURE_SINK_TIMEOUT_MS: {{ .Values.worker.failureSinkTimeoutMs | quote }}
+  SENTRY_ENV: {{ .Values.global.sentry.environment | quote }}
+  SENTRY_TRACES_SAMPLE_RATE: {{ .Values.global.sentry.tracesSampleRate | quote }}
+  SENTRY_RELEASE: {{ .Values.global.sentry.release | quote }}

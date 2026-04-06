@@ -16,3 +16,5 @@ cloudflared:
 
   logLevel: info
   metricsPort: 2000
+  onePassword:
+    itemPath: vaults/ksplpxkiblaftafiljqytehbcy/items/rfy6l2ltizlsfipgcvm2ycez64
