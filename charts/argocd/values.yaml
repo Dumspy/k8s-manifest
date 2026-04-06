@@ -11,7 +11,6 @@ argocd-image-updater:
 
 sso:
   github:
-    secretName: argocd-github-sso
     # GitHub OAuth app credentials synced by the 1Password Operator.
     onePasswordItemPath: "vaults/ksplpxkiblaftafiljqytehbcy/items/462rdh47q7hba2aebr4yrktfzy"
 
