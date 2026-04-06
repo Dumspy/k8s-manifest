@@ -9,13 +9,35 @@ argocd-image-updater:
     install: true
     keep: true
 
+sso:
+  github:
+    secretName: argocd-github-sso
+    # GitHub OAuth app credentials synced by the 1Password Operator.
+    onePasswordItemPath: "vaults/ksplpxkiblaftafiljqytehbcy/items/462rdh47q7hba2aebr4yrktfzy"
+
 argo-cd:
   server:
     service:
-      type: NodePort
+      type: ClusterIP
   configs:
+    cm:
+      url: https://argocd.rger.dev
+      dex.config: |
+        connectors:
+          - type: github
+            id: github
+            name: GitHub
+            config:
+              clientID: $argocd-github-sso:dex.github.clientID
+              clientSecret: $argocd-github-sso:dex.github.clientSecret
     params:
       server.insecure: "true"
+    rbac:
+      policy.default: ""
+      # Add one line per GitHub email that should have ArgoCD admin access.
+      policy.csv: |
+        g, felix.enok.berger@gmail.com, role:admin
+      scopes: "[groups, email]"
   notifications:
     enabled: true
     secret:
@@ -50,7 +72,7 @@ argo-cd:
                 },
                 {
                   "type": "context",
-                  "elements": [{"type": "mrkdwn", "text": "<http://argocd.internal.rger.dev/applications/argocd/{{.app.metadata.name}}|View in ArgoCD>"}]
+                  "elements": [{"type": "mrkdwn", "text": "<https://argocd.rger.dev/applications/argocd/{{.app.metadata.name}}|View in ArgoCD>"}]
                 }
               ]
             }]
@@ -82,7 +104,7 @@ argo-cd:
                 {{end}}
                 {
                   "type": "context",
-                  "elements": [{"type": "mrkdwn", "text": "<http://argocd.internal.rger.dev/applications/argocd/{{.app.metadata.name}}|View in ArgoCD>"}]
+                  "elements": [{"type": "mrkdwn", "text": "<https://argocd.rger.dev/applications/argocd/{{.app.metadata.name}}|View in ArgoCD>"}]
                 }
               ]
             }]
@@ -114,7 +136,7 @@ argo-cd:
                 {{end}}
                 {
                   "type": "context",
-                  "elements": [{"type": "mrkdwn", "text": "<http://argocd.internal.rger.dev/applications/argocd/{{.app.metadata.name}}|View in ArgoCD>"}]
+                  "elements": [{"type": "mrkdwn", "text": "<https://argocd.rger.dev/applications/argocd/{{.app.metadata.name}}|View in ArgoCD>"}]
                 }
               ]
             }]
@@ -140,7 +162,7 @@ argo-cd:
                 },
                 {
                   "type": "context",
-                  "elements": [{"type": "mrkdwn", "text": "<http://argocd.internal.rger.dev/applications/argocd/{{.app.metadata.name}}|View in ArgoCD>"}]
+                  "elements": [{"type": "mrkdwn", "text": "<https://argocd.rger.dev/applications/argocd/{{.app.metadata.name}}|View in ArgoCD>"}]
                 }
               ]
             }]
@@ -166,7 +188,7 @@ argo-cd:
                 },
                 {
                   "type": "context",
-                  "elements": [{"type": "mrkdwn", "text": "<http://argocd.internal.rger.dev/applications/argocd/{{.app.metadata.name}}|View in ArgoCD>"}]
+                  "elements": [{"type": "mrkdwn", "text": "<https://argocd.rger.dev/applications/argocd/{{.app.metadata.name}}|View in ArgoCD>"}]
                 }
               ]
             }]
@@ -199,7 +221,7 @@ argo-cd:
                 },
                 {
                   "type": "context",
-                  "elements": [{"type": "mrkdwn", "text": "<http://argocd.internal.rger.dev/applications/argocd/{{.app.metadata.name}}|View in ArgoCD>"}]
+                  "elements": [{"type": "mrkdwn", "text": "<https://argocd.rger.dev/applications/argocd/{{.app.metadata.name}}|View in ArgoCD>"}]
                 }
               ]
             }]
