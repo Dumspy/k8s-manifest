@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "auxarmory.auth.name" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "auxarmory.labels" . | nindent 4 }}
+    app.kubernetes.io/name: auth
+  annotations:
+    operator.1password.io/auto-restart: "true"
+spec:
+  replicas: {{ .Values.auth.replicaCount }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: auth
+      app.kubernetes.io/instance: {{ include "auxarmory.fullname" . }}
+  template:
+    metadata:
+      labels:
+        {{- include "auxarmory.labels" . | nindent 8 }}
+        app.kubernetes.io/name: auth
+        network.rger.dev/public-tunnel: "true"
+        network.rger.dev/access-postgres: "true"
+    spec:
+      containers:
+        - name: auth
+          image: "{{ .Values.auth.image.repository }}:{{ .Values.auth.image.tag }}"
+          imagePullPolicy: {{ .Values.auth.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.auth.service.port }}
+          envFrom:
+            - configMapRef:
+                name: {{ include "auxarmory.authConfigMapName" . }}
+            - secretRef:
+                name: {{ include "auxarmory.sharedSecretName" . }}
+            - secretRef:
+                name: {{ include "auxarmory.authSecretName" . }}
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            timeoutSeconds: 5
+          resources:
+            {{- toYaml .Values.auth.resources | nindent 12 }}

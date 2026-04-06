@@ -1,0 +1,108 @@
+global:
+  nodeEnv: production
+  appName: AuxArmory
+  hosts:
+    web: armory.rger.dev
+    auth: auth.armory.rger.dev
+    api: api.armory.rger.dev
+  cookieDomain: armory.rger.dev
+  sentry:
+    environment: production
+    tracesSampleRate: 0.1
+    release: ""
+  onePassword:
+    sharedItemPath: vaults/replace-me/items/replace-me
+
+imageUpdater:
+  enabled: true
+
+web:
+  replicaCount: 1
+  image:
+    repository: ghcr.io/dumspy/auxarmory-web
+    tag: latest
+    pullPolicy: Always
+  service:
+    port: 3000
+  resources:
+    requests:
+      memory: "256Mi"
+      cpu: "100m"
+    limits:
+      memory: "512Mi"
+      cpu: "500m"
+  onePassword:
+    itemPath: vaults/replace-me/items/replace-me
+
+auth:
+  replicaCount: 1
+  image:
+    repository: ghcr.io/dumspy/auxarmory-auth
+    tag: latest
+    pullPolicy: Always
+  service:
+    port: 4000
+  resources:
+    requests:
+      memory: "256Mi"
+      cpu: "100m"
+    limits:
+      memory: "512Mi"
+      cpu: "500m"
+  onePassword:
+    itemPath: vaults/replace-me/items/replace-me
+
+api:
+  replicaCount: 1
+  image:
+    repository: ghcr.io/dumspy/auxarmory-api
+    tag: latest
+    pullPolicy: Always
+  service:
+    port: 4001
+  resources:
+    requests:
+      memory: "256Mi"
+      cpu: "100m"
+    limits:
+      memory: "512Mi"
+      cpu: "500m"
+  onePassword:
+    itemPath: vaults/replace-me/items/replace-me
+
+worker:
+  replicaCount: 1
+  image:
+    repository: ghcr.io/dumspy/auxarmory-worker-service
+    tag: latest
+    pullPolicy: Always
+  resources:
+    requests:
+      memory: "256Mi"
+      cpu: "100m"
+    limits:
+      memory: "512Mi"
+      cpu: "500m"
+  failureSinkTimeoutMs: 400
+  onePassword:
+    itemPath: vaults/replace-me/items/replace-me
+
+migration:
+  enabled: false
+  command:
+    - /bin/sh
+    - -ec
+    - pnpm --filter @auxarmory/db db:migrate
+
+postgresql:
+  enabled: true
+  fullnameOverride: auxarmory-postgres
+  database:
+    name: auxarmory
+    user: auxarmory
+  onePassword:
+    itemPath: vaults/replace-me/items/replace-me
+
+redis:
+  enabled: true
+  fullnameOverride: auxarmory-redis

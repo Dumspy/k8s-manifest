@@ -1,0 +1,15 @@
+apiVersion: v2
+name: auxarmory
+description: AuxArmory umbrella chart
+type: application
+version: 0.1.0
+appVersion: "latest"
+dependencies:
+  - name: postgresql
+    version: 0.3.3
+    repository: file://../postgresql
+    condition: postgresql.enabled
+  - name: redis
+    version: 0.1.0
+    repository: file://../redis
+    condition: redis.enabled
