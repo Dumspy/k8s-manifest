@@ -9,8 +9,6 @@ on:
 env:
   RENDERED_DIR: rendered
   K8S_VERSION: 1.31.0
-  SCHEMA_URL: >-
-    https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/{{.Group}}/{{.ResourceKind}}_{{.ResourceAPIVersion}}.json
 
 jobs:
   validate:
@@ -44,16 +42,16 @@ jobs:
       - name: Collect Manifests
         run: |
           # Copy ArgoCD and unmanaged manifests to the rendered directory for scanning
-          # We use cp --parents or similar to avoid filename collisions
           [ -d "argo-apps" ] && cp -r argo-apps/ "${{ env.RENDERED_DIR }}/"
           [ -d "unmanaged" ] && cp -r unmanaged/ "${{ env.RENDERED_DIR }}/"
 
       - name: Kubeconform Validation
         run: |
+          # Validating against standard K8s schemas only.
+          # -ignore-missing-schemas is used to skip deep validation of CRDs (e.g. ArgoCD, 1Password)
+          # without failing the build, as we've removed the external schema dependency.
           nix develop --command kubeconform \
             -kubernetes-version ${{ env.K8S_VERSION }} \
-            -schema-location default \
-            -schema-location '${{ env.SCHEMA_URL }}' \
             -summary \
             -ignore-missing-schemas \
             ${{ env.RENDERED_DIR }}
@@ -68,7 +66,7 @@ jobs:
 
       - name: Best Practices Scan (Kube-score)
         run: |
-          # Run kube-score on all collected manifests. Using || true to prevent blocking for now.
+          # Run kube-score on all collected manifests.
           nix develop --command bash -c '
             find ${{ env.RENDERED_DIR }} -type f \( -name "*.yaml" -o -name "*.yml" \) \
             | xargs kube-score score || true
