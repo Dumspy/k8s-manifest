@@ -1,0 +1,107 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  lint:
+    name: YAML Lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run yamllint
+        uses: ibiqlik/action-yamllint@v3
+        with:
+          config_file: .yamllint
+
+  validate:
+    name: Validate Manifests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v4
+        with:
+          version: v3.15.0
+
+      - name: Install Kubeconform
+        run: |
+          VERSION="v0.6.7"
+          URL="https://github.com/yannh/kubeconform/releases/download/${VERSION}/kubeconform-linux-amd64.tar.gz"
+          curl -L "${URL}" | tar xz
+          sudo mv kubeconform /usr/local/bin/
+
+      - name: Install Kube-score
+        run: |
+          VERSION="1.18.0"
+          URL="https://github.com/zegl/kube-score/releases/download/v${VERSION}/kube-score_${VERSION}_linux_amd64.tar.gz"
+          curl -L "${URL}" | tar xz
+          sudo mv kube-score /usr/local/bin/
+
+      - name: Helm Lint
+        run: |
+          for chart in charts/*/; do
+            if [ -d "$chart" ]; then
+              echo "Linting chart: $chart"
+              helm dependency update "$chart"
+              helm lint "$chart"
+            fi
+          done
+
+      - name: Render and Prepare Manifests
+        run: |
+          mkdir rendered
+          # Render Helm charts
+          for chart in charts/*/; do
+            if [ -d "$chart" ]; then
+              chart_name=$(basename "$chart")
+              echo "Rendering chart: $chart_name"
+              helm dependency update "$chart"
+              helm template "$chart_name" "$chart" --include-crds > "rendered/chart-$chart_name.yaml"
+            fi
+          done
+
+          # Copy ArgoCD apps
+          if [ -d "argo-apps" ]; then
+            cp argo-apps/*.yaml rendered/ 2>/dev/null || true
+          fi
+
+          # Copy unmanaged manifests
+          if [ -d "unmanaged" ]; then
+            find unmanaged -name "*.yaml" -o -name "*.yml" -exec cp {} rendered/ \;
+          fi
+
+      - name: Kubeconform Validation
+        run: |
+          # Using 1.31.0 as a safe recent version.
+          # We also include CRD schemas from datreeio catalog.
+          SCHEMA_URL='https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/{{.Group}}/{{.ResourceKind}}_{{.ResourceAPIVersion}}.json'
+          kubeconform -kubernetes-version 1.31.0 \
+            -schema-location default \
+            -schema-location "${SCHEMA_URL}" \
+            -summary \
+            -ignore-missing-schemas \
+            rendered/
+
+      - name: Scan with Checkov
+        uses: bridgecrewio/checkov-action@master
+        with:
+          directory: rendered
+          framework: kubernetes
+          quiet: true
+          soft_fail: true
+
+      - name: Scan with Kube-score
+        run: |
+          # kube-score score rendered/*.yaml
+          # Note: kube-score can be very strict.
+          # We might want to use --ignore-test for some common things if it's too noisy.
+          # We use || true because existing manifests might not pass and we want to see the output first.
+          find rendered/ -name "*.yaml" | xargs kube-score score || true

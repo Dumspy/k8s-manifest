@@ -43,7 +43,7 @@ argo-cd:
   notifications:
     enabled: true
     secret:
-      create: false # using 1Password operator instead
+      create: false  # using 1Password operator instead
     cm:
       create: true
     notifiers:
