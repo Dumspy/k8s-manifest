@@ -93,11 +93,18 @@ worker:
     itemPath: vaults/replace-me/items/replace-me
 
 migration:
-  enabled: false
-  command:
-    - /bin/sh
-    - -ec
-    - pnpm --filter @auxarmory/db db:migrate
+  enabled: true
+  image:
+    repository: ghcr.io/dumspy/auxarmory-db-migrations
+    tag: latest
+    pullPolicy: Always
+  resources:
+    requests:
+      memory: "256Mi"
+      cpu: "100m"
+    limits:
+      memory: "512Mi"
+      cpu: "500m"
 
 postgresql:
   enabled: true

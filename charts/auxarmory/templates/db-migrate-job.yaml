@@ -21,14 +21,18 @@ spec:
       restartPolicy: OnFailure
       containers:
         - name: db-migrate
-          image: "{{ .Values.api.image.repository }}:{{ .Values.api.image.tag }}"
-          imagePullPolicy: {{ .Values.api.image.pullPolicy }}
+          image: "{{ .Values.migration.image.repository }}:{{ .Values.migration.image.tag }}"
+          imagePullPolicy: {{ .Values.migration.image.pullPolicy }}
+          {{- if .Values.migration.command }}
           command:
             {{- toYaml .Values.migration.command | nindent 12 }}
+          {{- end }}
           env:
             - name: NODE_ENV
               value: {{ .Values.global.nodeEnv | quote }}
           envFrom:
             - secretRef:
                 name: {{ include "auxarmory.sharedSecretName" . }}
+          resources:
+            {{- toYaml .Values.migration.resources | nindent 12 }}
 {{- end }}
