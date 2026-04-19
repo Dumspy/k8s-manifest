@@ -2,7 +2,7 @@ apiVersion: v2
 name: auxarmory
 description: AuxArmory umbrella chart
 type: application
-version: 0.1.0
+version: 0.1.1
 appVersion: "latest"
 dependencies:
   - name: postgresql
