@@ -1,0 +1,20 @@
+---
+extends: default
+
+rules:
+  indentation:
+    spaces: 2
+    indent-sequences: true
+  line-length: disable
+  quoted-strings:
+    required: false
+  truthy:
+    allowed-values: ["true", "false", "on", "off"]
+  braces: disable
+  comments:
+    level: warning
+  document-start: disable
+
+ignore:
+  - "charts/*/templates/*.yaml"
+  - "charts/*/templates/*.yml"

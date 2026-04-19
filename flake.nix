@@ -20,6 +20,11 @@
           name = "k8s-manifest";
 
           packages = with pkgs; [
+            kubernetes-helm
+            kubeconform
+            kube-score
+            checkov
+            yamllint
             helm-ls
           ];
         };
