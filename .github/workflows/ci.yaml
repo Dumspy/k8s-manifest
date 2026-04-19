@@ -29,6 +29,7 @@ jobs:
       - name: Render Charts
         run: |
           nix develop --command bash -c '
+            set -e
             mkdir -p ${{ env.RENDERED_DIR }}
             for chart in charts/*/; do
               [ -d "$chart" ] || continue
@@ -61,13 +62,13 @@ jobs:
           nix develop --command checkov \
             --directory ${{ env.RENDERED_DIR }} \
             --framework kubernetes \
-            --quiet \
-            --soft-fail
+            --quiet
 
       - name: Best Practices Scan (Kube-score)
         run: |
           # Run kube-score on all collected manifests.
           nix develop --command bash -c '
+            set -o pipefail
             find ${{ env.RENDERED_DIR }} -type f \( -name "*.yaml" -o -name "*.yml" \) \
-            | xargs kube-score score || true
+            | xargs kube-score score
           '
