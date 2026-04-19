@@ -2,5 +2,5 @@ apiVersion: v2
 name: cloudflare-tunnel
 description: Cloudflare Tunnel for Kubernetes
 type: application
-version: 0.1.1
+version: 0.1.2
 appVersion: "2026.1.2"

@@ -1,0 +1,44 @@
+{{- if .Values.imageUpdater.enabled }}
+apiVersion: argocd-image-updater.argoproj.io/v1alpha1
+kind: ImageUpdater
+metadata:
+  name: {{ include "auxarmory.fullname" . }}
+  namespace: argocd
+spec:
+  namespace: argocd
+  applicationRefs:
+    - namePattern: {{ include "auxarmory.fullname" . }}
+      images:
+        - alias: web
+          imageName: "{{ .Values.web.image.repository }}:{{ .Values.web.image.tag }}"
+          commonUpdateSettings:
+            updateStrategy: digest
+          manifestTargets:
+            helm:
+              name: web.image.repository
+              tag: web.image.tag
+        - alias: auth
+          imageName: "{{ .Values.auth.image.repository }}:{{ .Values.auth.image.tag }}"
+          commonUpdateSettings:
+            updateStrategy: digest
+          manifestTargets:
+            helm:
+              name: auth.image.repository
+              tag: auth.image.tag
+        - alias: api
+          imageName: "{{ .Values.api.image.repository }}:{{ .Values.api.image.tag }}"
+          commonUpdateSettings:
+            updateStrategy: digest
+          manifestTargets:
+            helm:
+              name: api.image.repository
+              tag: api.image.tag
+        - alias: worker
+          imageName: "{{ .Values.worker.image.repository }}:{{ .Values.worker.image.tag }}"
+          commonUpdateSettings:
+            updateStrategy: digest
+          manifestTargets:
+            helm:
+              name: worker.image.repository
+              tag: worker.image.tag
+{{- end }}

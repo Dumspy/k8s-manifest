@@ -1,0 +1,4 @@
+cloudflared:
+  onePassword:
+    # TODO: fill in the OCI tunnel 1Password item path.
+    itemPath: vaults/replace-me/items/replace-me

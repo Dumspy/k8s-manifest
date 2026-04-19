@@ -1,26 +1,25 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: auxarmormy-postgres
+  name: auxarmory
   namespace: argocd
   annotations:
     notifications.argoproj.io/subscribe.on-deployed.slack: deployments
     notifications.argoproj.io/subscribe.on-sync-failed.slack: deployments
     notifications.argoproj.io/subscribe.on-health-degraded.slack: deployments
+    notifications.argoproj.io/subscribe.on-image-updated.slack: deployments
 spec:
   project: default
   source:
     repoURL: https://github.com/Dumspy/k8s-manifest
-    path: charts/postgresql
+    path: charts/auxarmory
     targetRevision: HEAD
     helm:
-      releaseName: auxarmormy-postgres
       valueFiles:
         - values.yaml
-        - deployments/auxarmormy-postgres.yaml
   destination:
     name: oci-cluster
-    namespace: postgres
+    namespace: auxarmory
   syncPolicy:
     automated:
       prune: true
