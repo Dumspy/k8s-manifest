@@ -18,8 +18,16 @@ spec:
         app: {{ .Release.Name }}-controller
     spec:
       serviceAccountName: {{ .Release.Name }}-controller-sa
+      {{- with .Values.controller.podSecurityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       containers:
       - name: controller
+        {{- with .Values.controller.containerSecurityContext }}
+        securityContext:
+          {{- toYaml . | nindent 10 }}
+        {{- end }}
         image: "{{ .Values.controller.image.repository }}:{{ .Values.controller.image.tag }}"
         imagePullPolicy: {{ .Values.controller.image.pullPolicy }}
         ports:
