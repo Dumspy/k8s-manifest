@@ -3,7 +3,7 @@ bootstrap:
   applicationSets:
     - name: apps
       env: all
-      branch: HEAD
+      branch: main
       path: "apps/*/*.yaml"
 
 argocd-image-updater:

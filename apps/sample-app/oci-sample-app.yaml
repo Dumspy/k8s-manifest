@@ -2,7 +2,7 @@ name: sample-app-oci
 namespace: sample-app
 project: default
 chart_path: charts/sample-app
-targetRevision: HEAD
+targetRevision: main
 value_file1: values.yaml
 value_file2: ""
 cluster: oci-cluster

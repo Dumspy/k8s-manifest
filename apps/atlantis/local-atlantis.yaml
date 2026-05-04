@@ -2,7 +2,7 @@ name: atlantis
 namespace: atlantis
 project: default
 chart_path: charts/atlantis
-targetRevision: HEAD
+targetRevision: main
 value_file1: values.yaml
 value_file2: ""
 cluster: in-cluster
