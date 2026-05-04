@@ -1,0 +1,11 @@
+name: sample-app-oci-extra
+namespace: sample-app
+project: default
+chart_path: charts/sample-app
+targetRevision: main
+value_file1: ../../charts/sample-app/values.yaml
+cluster: oci-cluster
+notifications:
+    - on-deployed
+    - on-sync-failed
+    - on-health-degraded
