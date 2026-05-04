@@ -3,10 +3,9 @@ namespace: sample-app
 project: default
 chart_path: charts/sample-app
 targetRevision: main
-value_file1: values.yaml
-value_file2: ""
+value_file1: ../../charts/sample-app/values.yaml
 cluster: oci-cluster
 notifications:
-  - on-deployed
-  - on-sync-failed
-  - on-health-degraded
+    - on-deployed
+    - on-sync-failed
+    - on-health-degraded

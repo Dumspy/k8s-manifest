@@ -27,6 +27,11 @@ argo-cd:
     service:
       type: ClusterIP
   configs:
+    repositories:
+      k8s-manifest:
+        url: https://github.com/Dumspy/k8s-manifest
+        name: k8s-manifest
+        type: git
     cm:
       url: https://argocd.rger.dev
       dex.config: |

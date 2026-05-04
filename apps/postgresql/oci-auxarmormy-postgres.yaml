@@ -3,10 +3,10 @@ namespace: postgres
 project: default
 chart_path: charts/postgresql
 targetRevision: main
-value_file1: values.yaml
-value_file2: deployments/auxarmormy-postgres.yaml
+value_file1: ../../charts/postgresql/values.yaml
+value_file2: ../../charts/postgresql/deployments/auxarmormy-postgres.yaml
 cluster: oci-cluster
 notifications:
-  - on-deployed
-  - on-sync-failed
-  - on-health-degraded
+    - on-deployed
+    - on-sync-failed
+    - on-health-degraded

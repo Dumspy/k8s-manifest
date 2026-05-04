@@ -3,12 +3,11 @@ namespace: production
 project: default
 chart_path: charts/auxbot
 targetRevision: main
-value_file1: values.yaml
-value_file2: ""
+value_file1: ../../charts/auxbot/values.yaml
 cluster: in-cluster
 notifications:
-  - on-deployed
-  - on-sync-failed
-  - on-health-degraded
-  - on-rollback
-  - on-image-updated
+    - on-deployed
+    - on-sync-failed
+    - on-health-degraded
+    - on-rollback
+    - on-image-updated
