@@ -1,0 +1,12 @@
+name: auxarmormy-postgres
+namespace: postgres
+project: default
+chart_path: charts/postgresql
+targetRevision: HEAD
+value_file1: values.yaml
+value_file2: deployments/auxarmormy-postgres.yaml
+cluster: oci-cluster
+notifications:
+  - on-deployed
+  - on-sync-failed
+  - on-health-degraded
