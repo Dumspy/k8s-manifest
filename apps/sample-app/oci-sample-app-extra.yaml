@@ -1,4 +1,5 @@
 name: sample-app-oci-extra
+app_name: sample-app-oci-extra
 namespace: sample-app
 project: default
 chart_path: charts/sample-app

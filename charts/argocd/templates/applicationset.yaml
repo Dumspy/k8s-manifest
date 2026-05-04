@@ -6,6 +6,8 @@ metadata:
   name: {{ .name }}
   namespace: argocd
 spec:
+  goTemplate: true
+  goTemplateOptions: ["missingkeys=error"]
   ignoreApplicationDifferences:
     - jqPathExpressions:
       - .spec.source.helm.parameters
@@ -24,29 +26,29 @@ spec:
           {{- end }}
   template:
     metadata:
-      name: "{{`{{path.basename}}`}}-{{`{{namespace}}`}}-{{`{{cluster}}`}}"
+      name: "{{`{{default .path.basename .app_name}}`}}-{{`{{ .namespace }}`}}-{{`{{ .cluster }}`}}"
       labels:
-        app: "{{`{{path.basename}}`}}"
+        app: "{{`{{default .path.basename .app_name}}`}}"
       annotations:
         notifications.argoproj.io/subscribe.on-deployed.slack: deployments
         notifications.argoproj.io/subscribe.on-sync-failed.slack: deployments
         notifications.argoproj.io/subscribe.on-health-degraded.slack: deployments
         notifications.argoproj.io/subscribe.on-rollback.slack: deployments
     spec:
-      project: "{{`{{project}}`}}"
+      project: "{{`{{ .project }}`}}"
       source:
         repoURL: {{ $.Values.bootstrap.repoURL }}
-        path: "{{`{{chart_path}}`}}"
-        targetRevision: "{{`{{targetRevision}}`}}"
+        path: "{{`{{ .chart_path }}`}}"
+        targetRevision: "{{`{{ .targetRevision }}`}}"
         helm:
           valueFiles:
-            - "{{`{{value_file1}}`}}"
-            - "{{`{{value_file2}}`}}"
+            - "{{`{{ .value_file1 }}`}}"
+            - "{{`{{ .value_file2 }}`}}"
           ignoreMissingValueFiles: true
-          releaseName: "{{`{{path.basename}}`}}"
+          releaseName: "{{`{{default .path.basename .app_name}}`}}"
       destination:
-        name: "{{`{{cluster}}`}}"
-        namespace: "{{`{{namespace}}`}}"
+        name: "{{`{{ .cluster }}`}}"
+        namespace: "{{`{{ .namespace }}`}}"
       syncPolicy:
         automated:
           prune: true
