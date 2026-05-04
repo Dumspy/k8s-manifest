@@ -24,7 +24,7 @@ spec:
           {{- end }}
   template:
     metadata:
-      name: "{{`{{path.basename}}`}}-{{`{{namespace}}`}}-{{`{{project}}`}}"
+      name: "{{`{{path.basename}}`}}-{{`{{namespace}}`}}-{{`{{cluster}}`}}"
       labels:
         app: "{{`{{path.basename}}`}}"
       annotations:
