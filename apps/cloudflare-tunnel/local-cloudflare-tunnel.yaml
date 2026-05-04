@@ -1,0 +1,13 @@
+name: cloudflare-tunnel
+namespace: production
+project: default
+chart_path: charts/cloudflare-tunnel
+targetRevision: HEAD
+value_file1: values.yaml
+value_file2: ""
+cluster: in-cluster
+notifications:
+  - on-deployed
+  - on-sync-failed
+  - on-health-degraded
+  - on-rollback

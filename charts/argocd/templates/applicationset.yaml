@@ -1,0 +1,56 @@
+{{- range .Values.bootstrap.applicationSets }}
+---
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: {{ .name }}
+  namespace: argocd
+spec:
+  ignoreApplicationDifferences:
+    - jqPathExpressions:
+      - .spec.source.helm.parameters
+      - .spec.source.helm.values
+      - .spec.sources[] | .helm.parameters
+      - .spec.sources[] | .helm.values
+  generators:
+    - git:
+        repoURL: {{ $.Values.bootstrap.repoURL }}
+        revision: {{ .branch }}
+        files:
+          - path: {{ .path }}
+          {{- if .excludePath }}
+          - path: {{ .excludePath }}
+            exclude: true
+          {{- end }}
+  template:
+    metadata:
+      name: "{{`{{path.basename}}`}}-{{`{{namespace}}`}}-{{`{{project}}`}}"
+      labels:
+        app: "{{`{{path.basename}}`}}"
+      annotations:
+        notifications.argoproj.io/subscribe.on-deployed.slack: deployments
+        notifications.argoproj.io/subscribe.on-sync-failed.slack: deployments
+        notifications.argoproj.io/subscribe.on-health-degraded.slack: deployments
+        notifications.argoproj.io/subscribe.on-rollback.slack: deployments
+    spec:
+      project: "{{`{{project}}`}}"
+      source:
+        repoURL: {{ $.Values.bootstrap.repoURL }}
+        path: "{{`{{chart_path}}`}}"
+        targetRevision: "{{`{{targetRevision}}`}}"
+        helm:
+          valueFiles:
+            - "{{`{{value_file1}}`}}"
+            - "{{`{{value_file2}}`}}"
+          ignoreMissingValueFiles: true
+          releaseName: "{{`{{path.basename}}`}}"
+      destination:
+        name: "{{`{{cluster}}`}}"
+        namespace: "{{`{{namespace}}`}}"
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=true
+{{- end }}

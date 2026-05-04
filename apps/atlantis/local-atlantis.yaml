@@ -1,0 +1,13 @@
+name: atlantis
+namespace: atlantis
+project: default
+chart_path: charts/atlantis
+targetRevision: HEAD
+value_file1: values.yaml
+value_file2: ""
+cluster: in-cluster
+notifications:
+  - on-deployed
+  - on-sync-failed
+  - on-health-degraded
+  - on-rollback

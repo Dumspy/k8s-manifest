@@ -1,3 +1,11 @@
+bootstrap:
+  repoURL: https://github.com/Dumspy/k8s-manifest
+  applicationSets:
+    - name: apps
+      env: all
+      branch: HEAD
+      path: "apps/*/*.yaml"
+
 argocd-image-updater:
   config:
     registries:
