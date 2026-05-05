@@ -20,5 +20,19 @@ resources:
     memory: "128Mi"
     cpu: "100m"
 
+podSecurityContext:
+  runAsUser: 65532
+  runAsNonRoot: true
+  fsGroup: 65532
+
+containerSecurityContext:
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop: ["ALL"]
+  readOnlyRootFilesystem: true
+  runAsNonRoot: true
+  seccompProfile:
+    type: RuntimeDefault
+
 podAnnotations:
   cluster: oci-cluster
