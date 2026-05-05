@@ -1,13 +1,15 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ .Release.Name }}-headless
+  name: {{ include "postgresql.fullname" . }}-headless
   namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "postgresql.labels" . | nindent 4 }}
 spec:
   clusterIP: None
   publishNotReadyAddresses: true
   selector:
-    app: {{ .Release.Name }}
+    app: {{ include "postgresql.fullname" . }}
     component: postgres
   ports:
     - name: postgres

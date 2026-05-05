@@ -2,21 +2,24 @@
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: {{ .Release.Name }}
+  name: {{ include "postgresql.fullname" . }}
   namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "postgresql.labels" . | nindent 4 }}
   annotations:
     argocd.argoproj.io/sync-wave: "1"
 spec:
-  serviceName: {{ .Release.Name }}-headless
+  serviceName: {{ include "postgresql.fullname" . }}-headless
   replicas: 1
   selector:
     matchLabels:
-      app: {{ .Release.Name }}
+      app: {{ include "postgresql.fullname" . }}
       component: postgres
   template:
     metadata:
       labels:
-        app: {{ .Release.Name }}
+        {{- include "postgresql.labels" . | nindent 8 }}
+        app: {{ include "postgresql.fullname" . }}
         component: postgres
     spec:
       nodeSelector:
@@ -41,7 +44,7 @@ spec:
             - name: POSTGRES_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: {{ .Release.Name }}-secret
+                  name: {{ include "postgresql.secretName" . }}
                   key: POSTGRES_PASSWORD
             - name: PGDATA
               value: /var/lib/postgresql/data/pgdata

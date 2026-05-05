@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "auxarmory.worker.name" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "auxarmory.labels" . | nindent 4 }}
+    app.kubernetes.io/name: worker
+  annotations:
+    operator.1password.io/auto-restart: "true"
+spec:
+  replicas: {{ .Values.worker.replicaCount }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: worker
+      app.kubernetes.io/instance: {{ include "auxarmory.fullname" . }}
+  template:
+    metadata:
+      labels:
+        {{- include "auxarmory.labels" . | nindent 8 }}
+        app.kubernetes.io/name: worker
+        network.rger.dev/access-api: "true"
+        network.rger.dev/access-postgres: "true"
+        network.rger.dev/access-redis: "true"
+    spec:
+      containers:
+        - name: worker
+          image: "{{ .Values.worker.image.repository }}:{{ .Values.worker.image.tag }}"
+          imagePullPolicy: {{ .Values.worker.image.pullPolicy }}
+          envFrom:
+            - configMapRef:
+                name: {{ include "auxarmory.workerConfigMapName" . }}
+            - secretRef:
+                name: {{ include "auxarmory.sharedSecretName" . }}
+            - secretRef:
+                name: {{ include "auxarmory.workerSecretName" . }}
+          # livenessProbe:
+          #   httpGet:
+          #     path: /health
+          #     port: http
+          #   initialDelaySeconds: 30
+          #   periodSeconds: 10
+          #   timeoutSeconds: 5
+          # readinessProbe:
+          #   httpGet:
+          #     path: /ready
+          #     port: http
+          #   initialDelaySeconds: 5
+          #   periodSeconds: 5
+          #   timeoutSeconds: 5
+          resources:
+            {{- toYaml .Values.worker.resources | nindent 12 }}

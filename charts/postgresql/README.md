@@ -10,6 +10,22 @@ It includes:
 
 Shared chart defaults live in `values.yaml`. Deployment-specific overrides live in `deployments/*.yaml`.
 
+## Reuse As A Dependency
+
+This chart can be used standalone or as a dependency inside an umbrella chart.
+
+When used as a dependency, set `fullnameOverride` so resource names stay distinct from the parent release, for example:
+
+```yaml
+postgresql:
+  fullnameOverride: auxarmory-postgres
+```
+
+Optional naming values:
+
+- `fullnameOverride`: resource prefix used for the StatefulSet, services, and generated secret name
+- `secretNameOverride`: explicit override for the synced 1Password secret name
+
 ## Deployment Overrides
 
 Create one override file per database deployment under `deployments/` and reference it from ArgoCD with `valueFiles`.

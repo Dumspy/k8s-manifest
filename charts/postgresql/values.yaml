@@ -1,5 +1,8 @@
 # Shared defaults. Deployment-specific database and secret values live in deployments/*.yaml.
 
+fullnameOverride: ""
+secretNameOverride: ""
+
 image:
   repository: postgres
   tag: "16.9-alpine"
