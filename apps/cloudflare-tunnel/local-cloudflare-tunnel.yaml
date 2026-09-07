@@ -6,7 +6,7 @@ targetRevision: main
 value_file1: ../../charts/cloudflare-tunnel/values.yaml
 cluster: in-cluster
 notifications:
-    - on-deployed
-    - on-sync-failed
-    - on-health-degraded
-    - on-rollback
+  - on-deployed
+  - on-sync-failed
+  - on-health-degraded
+  - on-rollback

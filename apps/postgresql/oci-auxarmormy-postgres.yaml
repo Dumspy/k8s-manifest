@@ -7,6 +7,6 @@ value_file1: ../../charts/postgresql/values.yaml
 value_file2: ../../charts/postgresql/deployments/auxarmormy-postgres.yaml
 cluster: oci-cluster
 notifications:
-    - on-deployed
-    - on-sync-failed
-    - on-health-degraded
+  - on-deployed
+  - on-sync-failed
+  - on-health-degraded

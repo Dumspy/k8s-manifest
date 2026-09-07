@@ -6,8 +6,7 @@ Kubernetes Infrastructure-as-Code using Helm 3 and ArgoCD.
 
 ```bash
 # Validate before committing
-helm lint charts/<chart-name>
-helm template charts/<chart-name> | kubectl apply --dry-run=client -f -
+devenv tasks run validate:all
 ```
 
 ## Git Workflow
@@ -103,5 +102,5 @@ chore(charts): bump auxbot to 0.1.4
 
 1. Create chart: `mkdir charts/new-app` (Chart.yaml, values.yaml, templates/)
 2. Create ArgoCD app: `argo-apps/new-app.yaml`
-3. Validate: `helm lint && kubectl apply --dry-run=client`
+3. Validate: `devenv tasks run validate:all`
 4. Commit → ArgoCD auto-syncs from main

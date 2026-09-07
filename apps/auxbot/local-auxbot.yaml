@@ -6,8 +6,8 @@ targetRevision: main
 value_file1: ../../charts/auxbot/values.yaml
 cluster: in-cluster
 notifications:
-    - on-deployed
-    - on-sync-failed
-    - on-health-degraded
-    - on-rollback
-    - on-image-updated
+  - on-deployed
+  - on-sync-failed
+  - on-health-degraded
+  - on-rollback
+  - on-image-updated
