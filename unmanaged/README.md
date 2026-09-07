@@ -189,7 +189,7 @@ spec:
   project: default
   source:
     repoURL: https://github.com/Dumspy/k8s-manifest
-    path: charts/sample-app
+    path: charts/<chart-name>
     targetRevision: HEAD
   destination:
     name: <cluster-name>
