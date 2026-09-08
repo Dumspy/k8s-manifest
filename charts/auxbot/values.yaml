@@ -24,6 +24,26 @@ controller:
 
   secrets: ["DISCORD_TOKEN", "DISCORD_CLIENT_ID", "SENTRY_DSN", "ZHIPU_API_KEY"]
 
+redis:
+  enabled: true
+  image:
+    repository: redis
+    tag: "8.8.2"
+    pullPolicy: IfNotPresent
+  storage:
+    size: 1Gi
+    # Empty = use the cluster default StorageClass
+    storageClassName: ""
+  networkPolicy:
+    enabled: true
+  resources:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 100m
+      memory: 256Mi
+
 rbac:
   create: true
   rules:

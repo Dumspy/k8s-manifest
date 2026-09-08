@@ -54,6 +54,15 @@ spec:
               name: {{ $.Release.Name }}-secret
               key: {{ . }}
         {{- end }}
+        {{- if .Values.redis.enabled }}
+        - name: REDIS_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Release.Name }}-secret
+              key: REDIS_PASSWORD
+        - name: REDIS_URL
+          value: redis://:$(REDIS_PASSWORD)@{{ .Release.Name }}-redis:6379
+        {{- end }}
         {{- with .Values.controller.resources }}
         resources:
           {{- toYaml . | nindent 12 }}
