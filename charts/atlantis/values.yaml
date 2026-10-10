@@ -1,6 +1,6 @@
 atlantis:
   image:
-    tag: v0.40.0
+    tag: v0.48.1
     pullPolicy: IfNotPresent
 
   # Repository allowlist
@@ -32,7 +32,7 @@ atlantis:
 
   # Use OpenTofu instead of Terraform
   defaultTFDistribution: opentofu
-  defaultTFVersion: "1.11.0"
+  defaultTFVersion: "1.12.6"
 
   # GitHub App credentials via environmentSecrets
   environmentSecrets:
