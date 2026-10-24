@@ -3,31 +3,18 @@
     kubernetes-helm
     yamllint
     helm-ls
+    kubeconform
+    jq
   ];
 
-  # Single entrypoint for local dev and CI: `devenv tasks run validate:all`
+  # CI and local dev run the same script. `devenv tasks run validate:all` is the
+  # local entrypoint; partial task names run one check.
   tasks = {
-    "validate:lint".exec = "yamllint .";
-    "validate:helm".exec = ''
-      set -euo pipefail
-      # Idempotent: already-registered on local reruns, fresh on CI
-      helm repo add argo-helm https://argoproj.github.io/argo-helm 2>/dev/null || true
-      helm repo add atlantis https://runatlantis.github.io/helm-charts 2>/dev/null || true
-      for chart in charts/*/; do
-        if [ ! -f "$chart/Chart.yaml" ]; then
-          echo "Skipping non-chart: $chart"
-          continue
-        fi
-        name=$(basename "$chart")
-        echo "Validating: $name"
-        helm dependency build "$chart" > /dev/null
-        helm lint "$chart"
-        helm template "$name" "$chart" --include-crds > /dev/null
-      done
-    '';
-    "validate:all" = {
-      after = [ "validate:lint" "validate:helm" ];
-      exec = "echo 'All validations passed'";
-    };
+    "validate:lint".exec = "bash scripts/validate.sh lint";
+    "validate:helm".exec = "bash scripts/validate.sh helm";
+    "validate:schema".exec = "bash scripts/validate.sh schema";
+    "validate:images".exec = "bash scripts/validate.sh images";
+    "validate:chart-versions".exec = "bash scripts/validate.sh versions";
+    "validate:all".exec = "bash scripts/validate.sh";
   };
 }

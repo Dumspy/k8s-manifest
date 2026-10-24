@@ -1,4 +1,5 @@
 *.tgz
 .direnv
 .devenv/
+.cache/
 .pre-commit-config.yaml

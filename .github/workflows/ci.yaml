@@ -1,26 +1,57 @@
 name: CI
 
+# Same checks as `devenv tasks run validate:all` (scripts/validate.sh).
+# No path filters: a skipped job leaves a required check pending and blocks merge.
 on:
   push:
-    branches: [main]
+    branches:
+      - main
   pull_request:
-    branches: [main]
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   validate:
     name: Validate
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v5
-
-      - uses: cachix/install-nix-action@v31
-
-      - uses: cachix/cachix-action@v16
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
         with:
-          name: devenv
+          fetch-depth: 0
 
-      - name: Install devenv
-        run: nix profile add nixpkgs#devenv
+      - name: Fetch pull request base
+        if: github.event_name == 'pull_request'
+        run: |
+          git fetch --no-tags origin \
+            "${{ github.base_ref }}:refs/remotes/origin/${{ github.base_ref }}"
+
+      - name: Cache tools, Helm charts, and schemas
+        uses: actions/cache@caa296126883cff596d87d8935842f9db880ef25  # v5.1.0
+        with:
+          path: |
+            ~/.local/ci-tools
+            ~/.cache/helm
+            .cache/kubeconform
+          key: ci-${{ runner.os }}-${{ hashFiles('scripts/*.sh', 'charts/**/Chart.lock') }}
+          restore-keys: |
+            ci-${{ runner.os }}-
+
+      - name: Install tools
+        run: bash scripts/install-ci-tools.sh
 
       - name: Validate
-        run: devenv tasks run validate:all
+        env:
+          # Push events compare chart versions to the previous commit. Pull requests
+          # use GITHUB_BASE_REF, which actions sets only for that event.
+          GITHUB_EVENT_BEFORE: ${{ github.event.before }}
+        run: bash scripts/validate.sh
