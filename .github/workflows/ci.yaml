@@ -1,6 +1,6 @@
 name: CI
 
-# Same checks as `devenv tasks run validate:all` (scripts/validate.sh).
+# Same checks as `devenv tasks run validate:all`.
 on:
   push:
     branches:
@@ -30,21 +30,19 @@ jobs:
         if: github.event_name == 'pull_request'
         run: git fetch --no-tags origin "$GITHUB_BASE_REF"
 
-      - name: Install tools
-        run: |
-          set -euo pipefail
-          bindir="$HOME/.local/bin"
-          mkdir -p "$bindir"
-          curl -fsSL -o /tmp/helm.tgz https://get.helm.sh/helm-v4.2.4-linux-amd64.tar.gz
-          tar -xzf /tmp/helm.tgz -C /tmp
-          install -m 0755 /tmp/linux-amd64/helm "$bindir/helm"
-          curl -fsSL -o /tmp/kc.tgz \
-            https://github.com/yannh/kubeconform/releases/download/v0.8.0/kubeconform-linux-amd64.tar.gz
-          tar -xzf /tmp/kc.tgz -C "$bindir"
-          python3 -m pip install --user --disable-pip-version-check 'yamllint==1.37.1'
-          echo "$bindir" >> "$GITHUB_PATH"
+      - name: Install Nix
+        uses: cachix/install-nix-action@75c75c31ebece974e48ebc36b4ad125bd97bd97b  # 31.11.3
+
+      - name: Use the devenv cache
+        uses: cachix/cachix-action@38b082610b782e7e93e209c35fd730d399dee866  # v17
+        with:
+          name: devenv
+
+      # Same nixpkgs revision as devenv.lock, so the CLI matches the shell.
+      - name: Install devenv
+        run: nix profile add github:NixOS/nixpkgs/42f17a57f4f6e33b3de3dca0a2a5ea5233169d02#devenv
 
       - name: Validate
         env:
           GITHUB_EVENT_BEFORE: ${{ github.event.before }}
-        run: bash scripts/validate.sh
+        run: devenv tasks run validate:all
