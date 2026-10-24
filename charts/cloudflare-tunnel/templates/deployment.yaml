@@ -17,31 +17,14 @@ spec:
       labels:
         app: {{ .Release.Name }}
     spec:
-      serviceAccountName: {{ .Release.Name }}
       automountServiceAccountToken: false
       securityContext:
-        runAsNonRoot: true
-        runAsUser: 65532
-        runAsGroup: 65532
-        fsGroup: 65532
-        seccompProfile:
-          type: RuntimeDefault
         sysctls:
-          # Allows ICMP traffic (ping, traceroute) to resources behind cloudflared.
-          # The distroless image runs as uid 65532, so the range is that uid only.
+        # Allows ICMP traffic (ping, traceroute) to resources behind cloudflared.
           - name: net.ipv4.ping_group_range
             value: "65532 65532"
       containers:
         - name: cloudflared
-          securityContext:
-            allowPrivilegeEscalation: false
-            readOnlyRootFilesystem: true
-            runAsNonRoot: true
-            runAsUser: 65532
-            runAsGroup: 65532
-            capabilities:
-              drop:
-                - ALL
           image: "{{ .Values.cloudflared.image.repository }}:{{ .Values.cloudflared.image.tag }}"
           imagePullPolicy: {{ .Values.cloudflared.image.pullPolicy }}
           env:
@@ -77,13 +60,3 @@ spec:
           resources:
             {{- toYaml . | nindent 12 }}
           {{- end }}
-          volumeMounts:
-            - name: tmp
-              mountPath: /tmp
-            - name: home
-              mountPath: /home/nonroot
-      volumes:
-        - name: tmp
-          emptyDir: {}
-        - name: home
-          emptyDir: {}
