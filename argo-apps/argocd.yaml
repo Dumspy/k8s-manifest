@@ -18,7 +18,7 @@ spec:
   source:
     repoURL: https://github.com/Dumspy/k8s-manifest
     path: charts/argocd
-    targetRevision: HEAD
+    targetRevision: main
     helm:
       valueFiles:
         - values.yaml
