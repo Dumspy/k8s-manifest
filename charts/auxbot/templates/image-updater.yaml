@@ -11,8 +11,24 @@ spec:
         - alias: controller
           imageName: "{{ .Values.controller.image.repository }}:{{ .Values.controller.image.tag }}"
           commonUpdateSettings:
-            updateStrategy: digest
+            updateStrategy: newest-build
+            allowTags: "regexp:^sha-[0-9a-f]{7}$"
+            ignoreTags:
+              - latest
+              - master
           manifestTargets:
             helm:
               name: controller.image.repository
               tag: controller.image.tag
+        - alias: worker
+          imageName: "{{ .Values.worker.image.repository }}:{{ .Values.worker.image.tag }}"
+          commonUpdateSettings:
+            updateStrategy: newest-build
+            allowTags: "regexp:^sha-[0-9a-f]{7}$"
+            ignoreTags:
+              - latest
+              - master
+          manifestTargets:
+            helm:
+              name: worker.image.repository
+              tag: worker.image.tag

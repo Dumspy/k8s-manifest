@@ -47,6 +47,8 @@ spec:
         - name: {{ $key }}
           value: {{ $value | quote }}
         {{- end }}
+        - name: WORKER_IMAGE
+          value: "{{ .Values.worker.image.repository }}:{{ .Values.worker.image.tag }}"
         {{- range .Values.controller.secrets }}
         - name: {{ . }}
           valueFrom:
