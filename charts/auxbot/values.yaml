@@ -1,8 +1,7 @@
 controller:
   image:
     repository: ghcr.io/dumspy/auxbot-controller
-    # Immutable tag that matched the previous latest tag on 2026-10-24 (same digest).
-    tag: "sha-75af7f4"
+    tag: "latest"
     pullPolicy: Always
 
   service:
@@ -20,15 +19,10 @@ controller:
       memory: 256Mi
 
   env:
+    WORKER_IMAGE: "ghcr.io/dumspy/auxbot-worker:latest"
     INACTIVITY_TIMEOUT_MINUTES: "21"
 
   secrets: ["DISCORD_TOKEN", "DISCORD_CLIENT_ID", "SENTRY_DSN", "CHANNEL_REMINDER_USER_IDS"]
-
-worker:
-  image:
-    repository: ghcr.io/dumspy/auxbot-worker
-    # Immutable tag that matched the previous latest tag on 2026-10-24 (same digest).
-    tag: "sha-3843c54"
 
 redis:
   enabled: true

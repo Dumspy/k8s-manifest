@@ -1,13 +1,10 @@
 name: CI
 
-# Same checks as `devenv tasks run validate:all`.
 on:
   push:
-    branches:
-      - main
+    branches: [main]
   pull_request:
-    branches:
-      - main
+    branches: [main]
 
 permissions:
   contents: read
@@ -21,28 +18,16 @@ jobs:
     name: Validate
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
-        with:
-          fetch-depth: 0
+      - uses: actions/checkout@v7
 
-      - name: Fetch pull request base
-        if: github.event_name == 'pull_request'
-        run: git fetch --no-tags origin "$GITHUB_BASE_REF"
+      - uses: cachix/install-nix-action@v31
 
-      - name: Install Nix
-        uses: cachix/install-nix-action@75c75c31ebece974e48ebc36b4ad125bd97bd97b  # 31.11.3
-
-      - name: Use the devenv cache
-        uses: cachix/cachix-action@38b082610b782e7e93e209c35fd730d399dee866  # v17
+      - uses: cachix/cachix-action@v16
         with:
           name: devenv
 
-      # Same nixpkgs revision as devenv.lock, so the CLI matches the shell.
       - name: Install devenv
-        run: nix profile add github:NixOS/nixpkgs/42f17a57f4f6e33b3de3dca0a2a5ea5233169d02#devenv
+        run: nix profile add nixpkgs#devenv
 
       - name: Validate
-        env:
-          GITHUB_EVENT_BEFORE: ${{ github.event.before }}
         run: devenv tasks run validate:all
