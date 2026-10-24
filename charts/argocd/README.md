@@ -6,8 +6,8 @@ This chart deploys ArgoCD along with the `argocd-image-updater` and bootstraps A
 
 | Chart | Version | Repository |
 |---|---|---|
-| argo-cd | 9.5.11 | https://argoproj.github.io/argo-helm |
-| argocd-image-updater | 1.1.4 | https://argoproj.github.io/argo-helm |
+| argo-cd | 10.10.2 | https://argoproj.github.io/argo-helm |
+| argocd-image-updater | 1.3.1 | https://argoproj.github.io/argo-helm |
 
 ## ApplicationSet Bootstrap
 
@@ -21,7 +21,7 @@ bootstrap:
   applicationSets:
     - name: apps
       env: all
-      branch: HEAD
+      branch: main
       path: "apps/*/*.yaml"
 ```
 

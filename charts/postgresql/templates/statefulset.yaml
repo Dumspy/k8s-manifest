@@ -19,6 +19,7 @@ spec:
         app: {{ .Release.Name }}
         component: postgres
     spec:
+      automountServiceAccountToken: false
       nodeSelector:
         {{- toYaml .Values.nodeSelector | nindent 8 }}
       containers:

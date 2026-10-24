@@ -17,6 +17,7 @@ spec:
       labels:
         app: {{ .Release.Name }}
     spec:
+      automountServiceAccountToken: false
       securityContext:
         sysctls:
         # Allows ICMP traffic (ping, traceroute) to resources behind cloudflared.

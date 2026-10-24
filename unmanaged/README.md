@@ -46,6 +46,7 @@ kind: ServiceAccount
 metadata:
   name: argocd-manager
   namespace: argocd
+automountServiceAccountToken: false
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
@@ -190,7 +191,7 @@ spec:
   source:
     repoURL: https://github.com/Dumspy/k8s-manifest
     path: charts/<chart-name>
-    targetRevision: HEAD
+    targetRevision: main
   destination:
     name: <cluster-name>
     namespace: test
@@ -217,7 +218,7 @@ spec:
   source:
     repoURL: https://github.com/Dumspy/k8s-manifest
     path: charts/my-chart
-    targetRevision: HEAD
+    targetRevision: main
   destination:
     name: <cluster-name>  # Use the cluster name from the 1Password 'name' field
     namespace: production
