@@ -3,28 +3,29 @@
     kubernetes-helm
     yamllint
     helm-ls
+    kubeconform
   ];
 
   # Single entrypoint for local dev and CI: `devenv tasks run validate:all`
   tasks = {
     "validate:lint".exec = "yamllint .";
+
     "validate:helm".exec = ''
       set -euo pipefail
-      # Idempotent: already-registered on local reruns, fresh on CI
-      helm repo add argo-helm https://argoproj.github.io/argo-helm 2>/dev/null || true
-      helm repo add atlantis https://runatlantis.github.io/helm-charts 2>/dev/null || true
+      helm repo add argo-helm https://argoproj.github.io/argo-helm --force-update
+      helm repo add atlantis https://runatlantis.github.io/helm-charts --force-update
+      out=$(mktemp -d)
+      trap 'rm -rf "$out"' EXIT
       for chart in charts/*/; do
-        if [ ! -f "$chart/Chart.yaml" ]; then
-          echo "Skipping non-chart: $chart"
-          continue
-        fi
+        [ -f "$chart/Chart.yaml" ] || continue
         name=$(basename "$chart")
-        echo "Validating: $name"
-        helm dependency build "$chart" > /dev/null
+        helm dependency build "$chart" --skip-refresh
         helm lint "$chart"
-        helm template "$name" "$chart" --include-crds > /dev/null
+        helm template "$name" "$chart" --include-crds > "$out/$name.yaml"
       done
+      kubeconform -ignore-missing-schemas -summary "$out" argo-apps unmanaged
     '';
+
     "validate:all" = {
       after = [ "validate:lint" "validate:helm" ];
       exec = "echo 'All validations passed'";
