@@ -14,12 +14,15 @@ atlantis:
     ATLANTIS_GH_APP_KEY_FILE: "/var/secrets/github-app/key.pem"
     ATLANTIS_DEFAULT_TF_DISTRIBUTION: opentofu
 
-  # Server-side repo config - allows repo-level atlantis.yaml to override workflows
+  # Server-side repo config - allows repo-level atlantis.yaml to override workflows.
+  # undiverged refuses plan/apply when the PR head is behind its base branch.
+  # In v0.48.1 that check is skipped unless checkout strategy is merge (extraArgs).
   repoConfig: |
     ---
     repos:
     - id: /.*/
-      apply_requirements: []
+      plan_requirements: [undiverged]
+      apply_requirements: [undiverged]
       workflow: default
       allowed_overrides: [workflow, apply_requirements]
       allow_custom_workflows: true
@@ -89,8 +92,10 @@ atlantis:
   loadEnvFromSecrets:
     - opentofu-provider-secrets
 
-  # GitHub App needs --write-git-creds to support cloning
-  # silence-allowlist-errors prevents commenting on repos not in allowlist
+  # GitHub App needs --write-git-creds to support cloning.
+  # silence-allowlist-errors prevents commenting on repos not in allowlist.
+  # merge is required for undiverged; the default branch strategy skips the check.
   extraArgs:
     - --write-git-creds
     - --silence-allowlist-errors
+    - --checkout-strategy=merge
