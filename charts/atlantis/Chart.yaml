@@ -2,7 +2,7 @@ apiVersion: v2
 name: atlantis
 description: Atlantis - Terraform/OpenTofu PR automation
 type: application
-version: 0.2.0
+version: 0.2.1
 appVersion: "v0.48.1"
 dependencies:
   - name: atlantis
