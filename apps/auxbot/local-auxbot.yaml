@@ -10,4 +10,3 @@ notifications:
   - on-sync-failed
   - on-health-degraded
   - on-rollback
-  - on-image-updated

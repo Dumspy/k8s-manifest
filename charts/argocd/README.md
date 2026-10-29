@@ -80,4 +80,6 @@ After this step, any future changes to `charts/argocd` (including ApplicationSet
 
 ## Notifications
 
-Notification templates and triggers are configured under `argo-cd.notifications` in `values.yaml`. Slack tokens are sourced from the 1Password Operator.
+Slack notifications are configured under `argo-cd.notifications` in `values.yaml`. The bot token stays in the 1Password item synced to `argocd-notifications-secret`.
+
+Applications subscribe to `on-deployed`, `on-sync-failed`, `on-health-degraded`, and `on-rollback`. The first three triggers are the Argo CD v3.5.4 catalog triggers and dedupe with `oncePer: app.status.operationState.syncResult.revision`. `on-rollback` dedupes on `app.status.operationState.finishedAt` because that trigger is not in the catalog.

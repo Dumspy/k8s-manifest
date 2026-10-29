@@ -55,6 +55,8 @@ argo-cd:
       scopes: "[groups, email]"
   notifications:
     enabled: true
+    # Used as {{.context.argocdUrl}}. The chart otherwise falls back to global.domain.
+    argocdUrl: https://argocd.rger.dev
     secret:
       create: false  # using 1Password operator instead
     cm:
@@ -63,201 +65,187 @@ argo-cd:
       service.slack: |
         token: $slack-token
         icon: https://argo-cd.readthedocs.io/en/stable/assets/logo.png
+        # Leave commit links as links instead of GitHub previews.
+        disableUnfurl: true
         channels: ["deployments"]
+    # Slack text is one attachment so the color is the status. Commit subjects and
+    # error strings are JSON-encoded (toJson) because they contain quotes and newlines.
     templates:
       template.app-deployed: |
         slack:
           attachments: |
-            [{
-              "color": "#18be52",
-              "blocks": [
-                {
-                  "type": "section",
-                  "text": {
-                    "type": "mrkdwn",
-                    "text": ":rocket: *{{.app.metadata.name}}* deployed to `{{.app.spec.destination.namespace}}`"
-                  }
-                },
-                {
-                  "type": "section",
-                  "fields": [
-                    {"type": "mrkdwn", "text": "*Revision:*\n`{{.app.status.sync.revision | substr 0 7}}`"},
-                    {"type": "mrkdwn", "text": "*Repo:*\n<{{.app.spec.source.repoURL}}|{{.app.spec.source.repoURL | replace "https://github.com/" "" | replace ".git" ""}}>"}
-                  ]
-                },
-                {
-                  "type": "context",
-                  "elements": [{"type": "mrkdwn", "text": "<https://argocd.rger.dev/applications/argocd/{{.app.metadata.name}}|View in ArgoCD>"}]
-                }
-              ]
-            }]
+            {{- $app := .app -}}
+            {{- $rev := "" -}}
+            {{- $op := "" -}}
+            {{- if $app.status }}{{ $op = index $app.status "operationState" }}{{ end -}}
+            {{- if $op -}}
+            {{- $result := index $op "syncResult" -}}
+            {{- if $result }}{{ $rev = index $result "revision" | default "" }}{{ end -}}
+            {{- if not $rev -}}
+            {{- $operation := index $op "operation" -}}
+            {{- if $operation -}}
+            {{- $sync := index $operation "sync" -}}
+            {{- if $sync }}{{ $rev = index $sync "revision" | default "" }}{{ end -}}
+            {{- end -}}
+            {{- end -}}
+            {{- end -}}
+            {{- $repo := "" -}}
+            {{- if $app.spec -}}
+            {{- if $app.spec.source }}{{ $repo = call .repo.RepoURLToHTTPS $app.spec.source.repoURL | trimSuffix ".git" }}{{ end -}}
+            {{- end -}}
+            {{- $commit := "" -}}
+            {{- if and $rev $repo -}}
+            {{- $commit = printf "<%s/commit/%s|%s>" $repo $rev (trunc 7 $rev) -}}
+            {{- $subject := index (splitList "\n" (call .repo.GetCommitMetadata $rev).Message) 0 | trim | trunc 140 -}}
+            {{- if $subject }}{{ $commit = printf "%s %s" $commit $subject }}{{ end -}}
+            {{- end -}}
+            {{- $link := printf "%s/applications/%s/%s" .context.argocdUrl $app.metadata.namespace $app.metadata.name -}}
+            {{- $text := printf ":rocket: *%s* deployed" $app.metadata.name -}}
+            {{- if $commit }}{{ $text = printf "%s\n%s" $text $commit }}{{ end -}}
+            {{- $text = printf "%s\n<%s|Open in Argo CD>" $text $link -}}
+            [{"color":"#18be52","mrkdwn_in":["text"],"text":{{ $text | toJson }}}]
       template.app-sync-failed: |
         slack:
           attachments: |
-            [{
-              "color": "#e53935",
-              "blocks": [
-                {
-                  "type": "section",
-                  "text": {
-                    "type": "mrkdwn",
-                    "text": ":x: *{{.app.metadata.name}}* sync failed"
-                  }
-                },
-                {
-                  "type": "section",
-                  "fields": [
-                    {"type": "mrkdwn", "text": "*Namespace:*\n`{{.app.spec.destination.namespace}}`"},
-                    {"type": "mrkdwn", "text": "*Phase:*\n`{{.app.status.operationState.phase}}`"}
-                  ]
-                },
-                {{if .app.status.operationState.message}}
-                {
-                  "type": "section",
-                  "text": {"type": "mrkdwn", "text": "*Error:*\n```{{.app.status.operationState.message}}```"}
-                },
-                {{end}}
-                {
-                  "type": "context",
-                  "elements": [{"type": "mrkdwn", "text": "<https://argocd.rger.dev/applications/argocd/{{.app.metadata.name}}|View in ArgoCD>"}]
-                }
-              ]
-            }]
+            {{- $app := .app -}}
+            {{- $rev := "" -}}
+            {{- $op := "" -}}
+            {{- if $app.status }}{{ $op = index $app.status "operationState" }}{{ end -}}
+            {{- if $op -}}
+            {{- $result := index $op "syncResult" -}}
+            {{- if $result }}{{ $rev = index $result "revision" | default "" }}{{ end -}}
+            {{- if not $rev -}}
+            {{- $operation := index $op "operation" -}}
+            {{- if $operation -}}
+            {{- $sync := index $operation "sync" -}}
+            {{- if $sync }}{{ $rev = index $sync "revision" | default "" }}{{ end -}}
+            {{- end -}}
+            {{- end -}}
+            {{- end -}}
+            {{- $repo := "" -}}
+            {{- if $app.spec -}}
+            {{- if $app.spec.source }}{{ $repo = call .repo.RepoURLToHTTPS $app.spec.source.repoURL | trimSuffix ".git" }}{{ end -}}
+            {{- end -}}
+            {{- $commit := "" -}}
+            {{- if and $rev $repo -}}
+            {{- $commit = printf "<%s/commit/%s|%s>" $repo $rev (trunc 7 $rev) -}}
+            {{- $subject := index (splitList "\n" (call .repo.GetCommitMetadata $rev).Message) 0 | trim | trunc 140 -}}
+            {{- if $subject }}{{ $commit = printf "%s %s" $commit $subject }}{{ end -}}
+            {{- end -}}
+            {{- $detail := "" -}}
+            {{- if $op }}{{ $detail = index $op "message" | default "" | trim | replace "\n" " " | trunc 300 }}{{ end -}}
+            {{- $link := printf "%s/applications/%s/%s" .context.argocdUrl $app.metadata.namespace $app.metadata.name -}}
+            {{- $text := printf ":x: *%s* sync failed" $app.metadata.name -}}
+            {{- if $commit }}{{ $text = printf "%s\n%s" $text $commit }}{{ end -}}
+            {{- if $detail }}{{ $text = printf "%s\n%s" $text $detail }}{{ end -}}
+            {{- $text = printf "%s\n<%s|Open in Argo CD>" $text $link -}}
+            [{"color":"#E96D76","mrkdwn_in":["text"],"text":{{ $text | toJson }}}]
       template.app-health-degraded: |
         slack:
           attachments: |
-            [{
-              "color": "#ff9800",
-              "blocks": [
-                {
-                  "type": "section",
-                  "text": {
-                    "type": "mrkdwn",
-                    "text": ":warning: *{{.app.metadata.name}}* health degraded"
-                  }
-                },
-                {
-                  "type": "section",
-                  "fields": [
-                    {"type": "mrkdwn", "text": "*Namespace:*\n`{{.app.spec.destination.namespace}}`"},
-                    {"type": "mrkdwn", "text": "*Health:*\n`{{.app.status.health.status}}`"}
-                  ]
-                },
-                {{if .app.status.health.message}}
-                {
-                  "type": "section",
-                  "text": {"type": "mrkdwn", "text": "*Reason:*\n{{.app.status.health.message}}"}
-                },
-                {{end}}
-                {
-                  "type": "context",
-                  "elements": [{"type": "mrkdwn", "text": "<https://argocd.rger.dev/applications/argocd/{{.app.metadata.name}}|View in ArgoCD>"}]
-                }
-              ]
-            }]
-      template.app-sync-succeeded: |
-        slack:
-          attachments: |
-            [{
-              "color": "#18be52",
-              "blocks": [
-                {
-                  "type": "section",
-                  "text": {
-                    "type": "mrkdwn",
-                    "text": ":white_check_mark: *{{.app.metadata.name}}* synced successfully"
-                  }
-                },
-                {
-                  "type": "section",
-                  "fields": [
-                    {"type": "mrkdwn", "text": "*Namespace:*\n`{{.app.spec.destination.namespace}}`"},
-                    {"type": "mrkdwn", "text": "*Revision:*\n`{{.app.status.sync.revision | substr 0 7}}`"}
-                  ]
-                },
-                {
-                  "type": "context",
-                  "elements": [{"type": "mrkdwn", "text": "<https://argocd.rger.dev/applications/argocd/{{.app.metadata.name}}|View in ArgoCD>"}]
-                }
-              ]
-            }]
+            {{- $app := .app -}}
+            {{- $rev := "" -}}
+            {{- $op := "" -}}
+            {{- if $app.status }}{{ $op = index $app.status "operationState" }}{{ end -}}
+            {{- if $op -}}
+            {{- $result := index $op "syncResult" -}}
+            {{- if $result }}{{ $rev = index $result "revision" | default "" }}{{ end -}}
+            {{- if not $rev -}}
+            {{- $operation := index $op "operation" -}}
+            {{- if $operation -}}
+            {{- $sync := index $operation "sync" -}}
+            {{- if $sync }}{{ $rev = index $sync "revision" | default "" }}{{ end -}}
+            {{- end -}}
+            {{- end -}}
+            {{- end -}}
+            {{- $repo := "" -}}
+            {{- if $app.spec -}}
+            {{- if $app.spec.source }}{{ $repo = call .repo.RepoURLToHTTPS $app.spec.source.repoURL | trimSuffix ".git" }}{{ end -}}
+            {{- end -}}
+            {{- $commit := "" -}}
+            {{- if and $rev $repo -}}
+            {{- $commit = printf "<%s/commit/%s|%s>" $repo $rev (trunc 7 $rev) -}}
+            {{- $subject := index (splitList "\n" (call .repo.GetCommitMetadata $rev).Message) 0 | trim | trunc 140 -}}
+            {{- if $subject }}{{ $commit = printf "%s %s" $commit $subject }}{{ end -}}
+            {{- end -}}
+            {{- $detail := "" -}}
+            {{- if $app.status -}}
+            {{- $health := index $app.status "health" -}}
+            {{- if $health }}{{ $detail = index $health "message" | default "" | trim | replace "\n" " " | trunc 300 }}{{ end -}}
+            {{- end -}}
+            {{- $link := printf "%s/applications/%s/%s" .context.argocdUrl $app.metadata.namespace $app.metadata.name -}}
+            {{- $text := printf ":warning: *%s* degraded" $app.metadata.name -}}
+            {{- if $commit }}{{ $text = printf "%s\n%s" $text $commit }}{{ end -}}
+            {{- if $detail }}{{ $text = printf "%s\n%s" $text $detail }}{{ end -}}
+            {{- $text = printf "%s\n<%s|Open in Argo CD>" $text $link -}}
+            [{"color":"#f4c030","mrkdwn_in":["text"],"text":{{ $text | toJson }}}]
       template.app-rollback: |
         slack:
           attachments: |
-            [{
-              "color": "#9c27b0",
-              "blocks": [
-                {
-                  "type": "section",
-                  "text": {
-                    "type": "mrkdwn",
-                    "text": ":rewind: *{{.app.metadata.name}}* rolled back"
-                  }
-                },
-                {
-                  "type": "section",
-                  "fields": [
-                    {"type": "mrkdwn", "text": "*Namespace:*\n`{{.app.spec.destination.namespace}}`"},
-                    {"type": "mrkdwn", "text": "*Revision:*\n`{{.app.status.sync.revision | substr 0 7}}`"}
-                  ]
-                },
-                {
-                  "type": "context",
-                  "elements": [{"type": "mrkdwn", "text": "<https://argocd.rger.dev/applications/argocd/{{.app.metadata.name}}|View in ArgoCD>"}]
-                }
-              ]
-            }]
-      template.app-image-updated: |
-        slack:
-          attachments: |
-            [{
-              "color": "#2196f3",
-              "blocks": [
-                {
-                  "type": "section",
-                  "text": {
-                    "type": "mrkdwn",
-                    "text": ":package: *{{.app.metadata.name}}* image updated"
-                  }
-                },
-                {
-                  "type": "section",
-                  "fields": [
-                    {"type": "mrkdwn", "text": "*Namespace:*\n`{{.app.spec.destination.namespace}}`"},
-                    {"type": "mrkdwn", "text": "*Revision:*\n`{{.app.status.sync.revision | substr 0 7}}`"}
-                  ]
-                },
-                {
-                  "type": "section",
-                  "text": {
-                    "type": "mrkdwn",
-                    "text": "*Images:*\n{{range .app.status.summary.images}}`{{.}}`\n{{end}}"
-                  }
-                },
-                {
-                  "type": "context",
-                  "elements": [{"type": "mrkdwn", "text": "<https://argocd.rger.dev/applications/argocd/{{.app.metadata.name}}|View in ArgoCD>"}]
-                }
-              ]
-            }]
+            {{- $app := .app -}}
+            {{- $rev := "" -}}
+            {{- $op := "" -}}
+            {{- if $app.status }}{{ $op = index $app.status "operationState" }}{{ end -}}
+            {{- if $op -}}
+            {{- $result := index $op "syncResult" -}}
+            {{- if $result }}{{ $rev = index $result "revision" | default "" }}{{ end -}}
+            {{- if not $rev -}}
+            {{- $operation := index $op "operation" -}}
+            {{- if $operation -}}
+            {{- $sync := index $operation "sync" -}}
+            {{- if $sync }}{{ $rev = index $sync "revision" | default "" }}{{ end -}}
+            {{- end -}}
+            {{- end -}}
+            {{- end -}}
+            {{- $repo := "" -}}
+            {{- if $app.spec -}}
+            {{- if $app.spec.source }}{{ $repo = call .repo.RepoURLToHTTPS $app.spec.source.repoURL | trimSuffix ".git" }}{{ end -}}
+            {{- end -}}
+            {{- $commit := "" -}}
+            {{- if and $rev $repo -}}
+            {{- $commit = printf "<%s/commit/%s|%s>" $repo $rev (trunc 7 $rev) -}}
+            {{- $subject := index (splitList "\n" (call .repo.GetCommitMetadata $rev).Message) 0 | trim | trunc 140 -}}
+            {{- if $subject }}{{ $commit = printf "%s %s" $commit $subject }}{{ end -}}
+            {{- end -}}
+            {{- $link := printf "%s/applications/%s/%s" .context.argocdUrl $app.metadata.namespace $app.metadata.name -}}
+            {{- $text := printf ":rewind: *%s* rolled back" $app.metadata.name -}}
+            {{- if $commit }}{{ $text = printf "%s\n%s" $text $commit }}{{ end -}}
+            {{- $text = printf "%s\n<%s|Open in Argo CD>" $text $link -}}
+            [{"color":"#9c27b0","mrkdwn_in":["text"],"text":{{ $text | toJson }}}]
+    # The Helm chart does not install the notifications catalog, so these are the
+    # Argo CD v3.5.4 catalog triggers (notifications_catalog/triggers). oncePer is
+    # the last sync result revision. status.sync.revision is the branch HEAD and
+    # changes on every refresh of this monorepo, which re-fired on-deployed for
+    # every app whenever any commit landed on main.
     triggers:
       trigger.on-deployed: |
-        - when: app.status.operationState.phase in ['Succeeded'] and app.status.health.status == 'Healthy' and app.status.operationState.operation.sync != nil
+        - description: Application is synced and healthy. Triggered once per commit.
+          oncePer: app.status.operationState?.syncResult?.revision
           send: [app-deployed]
-          oncePer: app.status.sync.revision
+          when: >-
+            app.status.operationState != nil
+            and app.status.operationState.phase in ['Succeeded']
+            and app.status.health.status == 'Healthy'
+            and (!time.Parse(app.status.health.lastTransitionTime).Add(1 * time.Minute).Before(time.Parse(app.status.operationState.finishedAt))
+            or time.Parse(app.status.health.lastTransitionTime).Before(time.Parse(app.status.operationState.startedAt)))
       trigger.on-health-degraded: |
-        - when: app.status.health.status == 'Degraded' and app.status.operationState.phase != 'Running'
+        - description: Application has degraded
+          oncePer: app.status.operationState?.syncResult?.revision
           send: [app-health-degraded]
-          oncePer: app.status.health.status
+          when: app.status.health.status == 'Degraded'
       trigger.on-sync-failed: |
-        - when: app.status.operationState.phase in ['Error', 'Failed']
+        - description: Application syncing has failed
+          oncePer: app.status.operationState?.syncResult?.revision
           send: [app-sync-failed]
-          oncePer: app.status.operationState.startedAt
+          when: app.status.operationState != nil and app.status.operationState.phase in ['Error', 'Failed']
+      # Not in the v3.5.4 catalog. finishedAt stays put for this operation, so a
+      # later commit on main does not notify again while the rollback is still the
+      # latest operation. status.sync.revision would.
       trigger.on-rollback: |
-        - when: app.status.operationState.phase == 'Succeeded' and app.status.operationState.operation.rollback != nil
+        - description: Application rolled back successfully.
+          oncePer: app.status.operationState.finishedAt
           send: [app-rollback]
-          oncePer: app.status.sync.revision
-      trigger.on-image-updated: |
-        - when: app.status.operationState.phase == 'Succeeded' and app.status.operationState.initiatedBy.automated == true and app.status.operationState.operation.sync != nil
-          send: [app-image-updated]
-          oncePer: app.status.sync.revision
+          when: >-
+            app.status.operationState != nil
+            and app.status.operationState.phase == 'Succeeded'
+            and app.status.operationState.operation?.rollback != nil
